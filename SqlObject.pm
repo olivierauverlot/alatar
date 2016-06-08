@@ -67,9 +67,4 @@ sub isSqlCursor {
 	return 0;
 }
 
-sub getName {
-	my ($this) = @_;
-	return $this->{name};
-}
-
 1;

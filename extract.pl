@@ -11,31 +11,33 @@ use File::Path;
 use Data::Dumper;
 use XML::Writer;
 use IO::File;
+use File::Basename;
+use Configuration;
 use SqlDatabase;
 use SqlFunction;
 
 use utf8;
 
-my $DEST_PATH = '/tmp/sql';
+my $VERSION = '0.1';
 my $REQUESTS_FOLDER = '/requests';
 my $CURSORS_FOLDER = '/cursors';
-
-my $CATALOG_NAME = 'catalog.xml';
-
-my $schemaPath = '';
-my $destPath = '';
 
 my (@requestFiles,@cursorFiles);
 
 my (@userFunctionsList,%invokedFunctions);
 
-my $model;
+my ($model,$conf);
+
+sub version {
+	print "Alatar version $VERSION\n\n";
+	exit 1;
+}
 
 sub loadSQLSchema {
 	my ($filePath) = @_;
 	my $data;
 	
-	open(DATA,$schemaPath) || die "$!";
+	open(DATA,Configuration->getOption('schemaPath')) || die "You must specify a SQL schema";
 	while( defined( my $l = <DATA> ) ) {
    		$data = $data . $l;
 	}
@@ -57,7 +59,7 @@ sub cleanSchema {
 
 sub saveRequest {
 	my ($destFile,$request) = @_;
-	open(FD,'>',$destFile) or die("open: $!");
+	open(FD,'>',$destFile) or die("The SQL request can't be exported");
 	print(FD $request);
 	close(FD);
 }
@@ -77,12 +79,12 @@ sub protectPath {
 sub saveRequests {
 	my $dest;
 	foreach my $r ($model->getSqlRequests()) {
-		$dest = $DEST_PATH . $REQUESTS_FOLDER . '/' . $r->getName() . '.sql';
+		$dest = Configuration->getOption('requestsPath') . $REQUESTS_FOLDER . '/' . $r->getName() . '.sql';
 		push(@requestFiles,$r->getName());
 		saveRequest($dest,$r->getRequest());
 	}
 	foreach my $r ($model->getSqlCursorRequests()) {
-		$dest = $DEST_PATH . $CURSORS_FOLDER . '/' . $r->getName() . '.sql';
+		$dest = Configuration->getOption('requestsPath') . $CURSORS_FOLDER . '/' . $r->getName() . '.sql';
 		push(@cursorFiles,$r->getName());
 		saveRequest($dest,$r->getRequest());
 	}
@@ -107,15 +109,11 @@ sub addToCompactSchema {
 
 # Produce a compacted schema
 sub createCompactSchema {
-	my ($filename,$schema) = @_;
+	my ($destPath,$schema) = @_;
 	my $fd;
-	
 	my @items;
-	$filename =~ s/\./_compact\./g;
-	my $dest = $DEST_PATH . '/' . $filename;
 	
-	open($fd,'>',$dest) || die "$!";
-	
+	open($fd,'>',$destPath) || die "Cannot create the compact schema";
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+TABLE\s.*?\);)/gs);
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+VIEW.*?;)/gs);
 	addToCompactSchema($fd,$schema =~ /(CREATE FUNCTION\s(.*?)END;\$\$;)/gs);
@@ -125,28 +123,11 @@ sub createCompactSchema {
 	close($fd);
 }
 
-# Gentlemen, start your engines!
-sub run {
-	my ($schema,$xmlFileName,@args,@requests,@cursors,@invokedMethods,@callers,@row);
-	my ($xmlOutput,$xmlWriter);
-	my @subFolders = ($REQUESTS_FOLDER , $CURSORS_FOLDER);
-	
-	$schema = loadSQLSchema();
-	$model = SqlDatabase->new($schemaPath,cleanSchema($schema));
-
-	rmtree($destPath);
-	mkpath($destPath);
-	foreach my $subFolder (@subFolders) {
-		mkpath($destPath . $subFolder);
-	}
-	# Create a compact version of the schema
-	createCompactSchema($schemaPath,$schema);
-
-	# Save request in folders
-	saveRequests();
-	
-	# Produce serialized version of the object representation (XML)
-	$xmlFileName = $DEST_PATH . '/' . $model->getName();
+# Produce serialized version of the object representation (XML)
+sub buildXmlFile {
+	my ($xmlFileName,$xmlOutput,$xmlWriter);
+	my (@args,@requests,@cursors,@invokedMethods,@callers,@row);
+	$xmlFileName = Configuration->getOption('xmlFilePath');
 	$xmlFileName =~ s/\.\w+/.xml/g;
 	$xmlOutput = new IO::File(">$xmlFileName");
 	$xmlWriter = new XML::Writer(OUTPUT => $xmlOutput, DATA_MODE => 1, DATA_INDENT=>2);
@@ -187,7 +168,7 @@ sub run {
 					$xmlWriter->cdata($r->getRequest());
 		 			$xmlWriter->endTag();
 		 			$xmlWriter->startTag('json');
-		 			my $dest = $destPath . $REQUESTS_FOLDER . '/' . $r->getName() . '.sql';
+		 			my $dest = Configuration->getOption('requestsPath') . $REQUESTS_FOLDER . '/' . $r->getName() . '.sql';
 		 			my $jsonData = qx { ./bin/parse_file "$dest"};
 					$xmlWriter->cdata($jsonData);
 		 			$xmlWriter->endTag();
@@ -222,7 +203,7 @@ sub run {
 					$xmlWriter->cdata($r->getRequest());
 		 			$xmlWriter->endTag();
 		 			$xmlWriter->startTag('json');
-		 			my $dest = $destPath . $CURSORS_FOLDER . '/' . $r->getName() . '.sql';
+		 			my $dest = Configuration->getOption('requestsPath') . $CURSORS_FOLDER . '/' . $r->getName() . '.sql';
 		 			my $jsonData = qx { ./bin/parse_file "$dest"};
 					$xmlWriter->cdata($jsonData);
 		 			$xmlWriter->endTag();
@@ -308,27 +289,80 @@ sub run {
  	}
 	$xmlWriter->endTag();	# end of trigger definition
 	
-	
-	
-	
 	$xmlWriter->endTag();	# end of schema definition
 	$xmlWriter->end();
 }
 
+# Gentlemen, start your engines!
+sub run {
+	my ($schema);
+
+	my @subFolders = ($REQUESTS_FOLDER , $CURSORS_FOLDER);
+	
+	$schema = loadSQLSchema();
+	$model = SqlDatabase->new(Configuration->getOption('schemaPath'),cleanSchema($schema));
+
+	if(Configuration->getOption('requestsPath')) {
+		rmtree(Configuration->getOption('requestsPath'));
+		mkpath(Configuration->getOption('requestsPath'));
+		foreach my $subFolder (@subFolders) {
+			mkpath(Configuration->getOption('requestsPath') . $subFolder);
+		}
+		# Save request in folders
+		saveRequests();
+	}
+	
+	# Create a compact version of the schema
+	if(Configuration->getOption('simplifiedSchemaPath')) {
+		createCompactSchema(Configuration->getOption('simplifiedSchemaPath'),$schema);
+	}
+	
+	# Produce serialized version of the object representation (XML)
+	if(Configuration->getOption('xmlFilePath')) {
+		buildXmlFile();
+	}
+}
+
+# Default values
+Configuration->setOption('exclude',0);
+Configuration->setOption('schemaPath',undef);
+Configuration->setOption('simplifiedSchemaPath',undef);
+Configuration->setOption('xmlFilePath',undef);
+Configuration->setOption('RequestsPath','/tmp');
 
 # Command line parameters
-sub setSchemaPath { $schemaPath = $_[1]; }
+sub setSchemaPath { 
+	Configuration->setOption('schemaPath',$_[1]);
+}
 
-sub setDestPath { $destPath = $_[1]; }
+sub setSimplifiedSchemaPath { 
+	Configuration->setOption('simplifiedSchemaPath',$_[1]);
+}
+
+sub setXmlFilePath {
+	Configuration->setOption('xmlFilePath',$_[1]);
+}
+
+sub setRequestsPath { 
+	Configuration->setOption('requestsPath',$_[1]); 
+}
+
+sub setExcludeOn {
+	Configuration->setOption('exclude',1);
+}
+
+sub help {
+}
 
 GetOptions ("-/",               #compatible with the dos style
 	"f=s" => \&setSchemaPath,
-	"d=s" => \&setDestPath,
+	"s=s" => \&setSimplifiedSchemaPath,
+	"r=s" => \&setRequestsPath,
+	"o=s" => \&setXmlFilePath,
+	"x" => \&setExcludeOn,
+	"v" => \&version,
+	"h" => \&help
 ) or die("Error in command line arguments\n");
 
-if($destPath eq '') {
-	$destPath = $DEST_PATH;
-}
-
 run();
-print Dumper($model);
+#print Dumper($model);

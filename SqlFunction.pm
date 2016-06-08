@@ -4,6 +4,8 @@ use strict;
 use Data::Dumper;
 use String::Util qw(trim);
 use Regexp::Common;
+use Configuration;
+use PgKeywords;
 use SqlObject;
 use SqlArgument;
 use SqlFunctionInvocation;
@@ -28,6 +30,7 @@ sub new {
  	$this->{requests} = [ ];
  	$this->{newColumns} = [ ];
  	$this->{oldColumns} = [ ];
+ 	$this->{_cursors} = [ ];
  	bless($this,$class);    
  	$this->extractFunctionStructure($code);
  	return $this;            
@@ -234,7 +237,19 @@ sub addOldColumn {
 # Return the number of function's arguments
 sub extractArgumentsNumber {
 	my ($this,$arguments) = @_;
-	return scalar(split(/,/, $arguments));
+	
+	my @args = $arguments =~ /^\((.*?)\)$/g;
+	if($args[0] eq '') {
+		return 0;
+	} else {
+		my @commas = $args[0] =~ /(\,)/g;
+		my $numberOfCommas = scalar(@commas);
+		if($numberOfCommas >= 1) {
+			return $numberOfCommas + 1;
+		} else {
+			return 1;
+		}
+	}
 }
 
 # Return a formated name for cursors and request
@@ -245,44 +260,53 @@ sub buildName {
 
 sub extractCursorDefinitions {
 	my ($this) = @_;
-	my @cursors = $this->getDeclareSection() =~ /(\w*)\s+CURSOR\s+(.*)FOR\s+(.*\;)/g;
+	my @cursors = $this->getDeclareSection() =~ /(\w*)\s+CURSOR\s+(.*)FOR\s+(.*\;)/gi;
 	for(my $i = 0;$i <= ($#cursors - 1);$i+=2) {
 		$this->addRequest(SqlCursor->new($this,$cursors[$i],$cursors[$i + 1],$cursors[$i + 2]));
+		push(@{$this->{_cursors}},$cursors[$i]);
 	}
 }
 
 sub extractRequests {
 	my ($this) = @_;
 	my $reqNumber;
-	my @requests = $this->getBodySection() =~ /(SELECT|UPDATE|INSERT|DELETE)(.*?)(;)/g;
+	my @requests = $this->getBodySection() =~ /(SELECT|UPDATE|INSERT|DELETE)(.*?)(;)/gi;
 	$reqNumber = 0;
-	for(my $i = 0;$i <= ($#requests - 2);$i+=2) {
-		# Effacement de la requête pour que les fonctions contenues ne soient pas référencées
-		# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		# --- Code temporaire ---
+	for(my $i = 0;$i <= ($#requests - 2);$i+=3) {
 		my $request = "$requests[$i]$requests[$i + 1];";
-		my $reqPattern = quotemeta($request);
-		my $body = $this->getBodySection();
-		$this->setBodySection($body =~ s/$reqPattern//g);
-		# -----------------------
+		# If the exclude option is true, the SQL request is deleted to avoid the referencement of the invoked functions	
+		if(Configuration->getOption('exclude')) {
+			my $reqPattern = quotemeta($request);
+			my $body = $this->getBodySection();
+			$this->setBodySection($body =~ s/$reqPattern//gi);
+		}
 		$reqNumber = $reqNumber + 1;
 		$this->addRequest(SqlRequest->new($this,$this->buildName('R',$reqNumber),$request));
 	}
 }
 
+# validate that the function name is not a cursor name
+sub isNotCursorName {
+	my ($this,$cursorName) = @_;
+	return !(grep {$_ eq $cursorName} @{$this->{_cursors}})
+}
+
 sub extractInvokedFunctions {
 	my ($this,$code) = @_;
-	my @funcs = $code =~ /((\w+)$RE{balanced}{-parens=>'( )'})/g;
-	for(my $i = 0;$i <= ($#funcs - 2);$i+=3) {
-		$this->addInvokedFunction(SqlFunctionInvocation->new($this,$funcs[$i+1],$this->extractArgumentsNumber($funcs[$i+2])));
-		$this->extractInvokedFunctions($funcs[$i+2]);
+	my @funcs = $code =~ /(\w+)$RE{balanced}{-parens=>'( )'}/g;
+	for(my $i = 0;$i <= ($#funcs - 1);$i+=2) {
+		# Before to add it at the invoked functions list, we must validate that it's not a cursor and it's not a PostgreSQL keyword
+		if($this->isNotCursorName($funcs[$i]) && PgKeywords->isNotKeyword($funcs[$i])) {
+			$this->addInvokedFunction(SqlFunctionInvocation->new($this,$funcs[$i],$this->extractArgumentsNumber($funcs[$i+1])));
+			$this->extractInvokedFunctions($funcs[$i+1]);
+		}
 	}
 }
 
 sub extractNewOldColumns {
 	my ($this,$code) = @_;
-	my @news = $code =~ /NEW.([\w\_\$\d]+)/g;
-	my @olds = $code =~ /OLD.([\w\_\$\d]+)/g;
+	my @news = $code =~ /NEW.([\w\_\$\d]+)/gi;
+	my @olds = $code =~ /OLD.([\w\_\$\d]+)/gi;
 	foreach my $new (@news) {
 		$this->addNewColumn($new);
 	}
@@ -293,18 +317,18 @@ sub extractNewOldColumns {
 
 sub extractFunctionStructure {
 	my ($this,$code) = @_;
-	my @items = $code =~ /((\"?(\w+)\"?\(((\w*\s\w*),?)*\))\sRETURNS\s(\w+\s?\w*)\s*LANGUAGE\s*(\w*))/;
+	my @items = $code =~ /((\"?(\w+)\"?\(((\w*\s\w*),?)*\))\sRETURNS\s(\w+\s?\w*)\s*LANGUAGE\s*(\w*))/i;
 	$this->setSignature($items[1]);
 	$this->setName($items[2]);
 	$this->setReturnType(trim($items[5])); 
 	$this->setLanguage($items[6]);
 	
 	# Extract the declare and the body sections 
-	my ($declare) = $code =~ /DECLARE(.*)BEGIN/;
+	my ($declare) = $code =~ /DECLARE(.*)BEGIN/i;
 	if($declare) {
 		$this->setDeclareSection($declare);
 	}
-	my ($body) = $code =~ /BEGIN\s(.*)/;
+	my ($body) = $code =~ /BEGIN\s(.*)/i;
 	if($body) {
 		$this->setBodySection($body);
 	}

@@ -85,7 +85,7 @@ sub setInvokedFunction {
 # ----------------------------------------------------
 sub extractTriggerStructure {
 	my ($this,$code) = @_;
-	my @items = $code =~ /(.+?)\s(BEFORE|AFTER|INSTEAD\sOF)\s(INSERT|UPDATE|DELETE|TRUNCATE)\sON\s(.+?)\sFOR\sEACH\s(ROW|STATEMENT)\sEXECUTE\sPROCEDURE\s(.+)\(/g;
+	my @items = $code =~ /(.+?)\s(BEFORE|AFTER|INSTEAD\sOF)\s(INSERT|UPDATE|DELETE|TRUNCATE)\sON\s(.+?)\sFOR\sEACH\s(ROW|STATEMENT)\sEXECUTE\sPROCEDURE\s(.+)\(/gi;
 	$this->setName($items[0]);
 	$this->setFire($items[1]);
 	$this->setEvent($items[2]);

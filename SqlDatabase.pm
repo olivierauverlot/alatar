@@ -1,10 +1,11 @@
 package SqlDatabase;
 
-use SqlResolver;
+
 use Data::Dumper;
 use strict;
 use SqlFunction;
 use SqlTrigger; 
+use SqlResolver;
 
 sub new {
 	my ($class,$name,$schema) = @_;
@@ -44,7 +45,7 @@ sub getObjects {
 
 sub extractFunctions {
 	my ($this) = @_;
-	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/g;
+	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
 	foreach my $fcode (@functions) {
 		$this->addObject(SqlFunction->new($this,$fcode));
 	}
@@ -52,7 +53,7 @@ sub extractFunctions {
 
 sub extractTriggers {
 	my ($this) = @_;
-	my @triggers = $this->{schema} =~ /CREATE TRIGGER\s(.*?);/g;
+	my @triggers = $this->{schema} =~ /CREATE TRIGGER\s(.*?);/gi;
 	foreach my $trigger (@triggers) {
 		$this->addObject(SqlTrigger->new($this,$trigger));
 	}
