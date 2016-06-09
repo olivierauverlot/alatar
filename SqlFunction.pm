@@ -32,7 +32,7 @@ sub new {
  	$this->{oldColumns} = [ ];
  	$this->{_cursors} = [ ];
  	bless($this,$class);    
- 	$this->extractFunctionStructure($code);
+ 	$this->_extractFunctionStructure($code);
  	return $this;            
 }
 
@@ -48,10 +48,11 @@ sub getArgs {
 	return @{$this->{args}};
 }
 
-sub addArg {
+sub _addArg {
 	my ($this,$sqlArg) = @_;
 	push(@{$this->{args}},$sqlArg);
 	$this->{argumentsNumber} = $this->{argumentsNumber} + 1;
+	return $sqlArg;
 }
 
 sub printArgs {
@@ -114,7 +115,7 @@ sub getDeclareSection {
 	return $this->{declareSection};
 }
 
-sub setDeclareSection {
+sub _setDeclareSection {
 	my ($this,$declareSection) = @_;
 	$this->{declareSection} = $declareSection;	
 }
@@ -124,7 +125,7 @@ sub getBodySection {
 	return $this->{bodySection};
 }
 
-sub setBodySection {
+sub _setBodySection {
 	my ($this,$bodySection) = @_;
 	$this->{bodySection} = $bodySection;	
 }
@@ -139,6 +140,7 @@ sub getInvokedFunctions {
 sub addInvokedFunction {
 	my ($this,$invocation) = @_;
 	push(@{$this->{invokedFunctions}},$invocation);
+	return $invocation;
 }
 
 # Called By
@@ -152,6 +154,7 @@ sub getCallers {
 sub addCaller {
 	my ($this,$caller) = @_;
 	push(@{$this->{callers}},$caller);
+	return $caller;
 }
 
 # Used Requests
@@ -186,6 +189,7 @@ sub getSqlCursorRequests {
 sub addRequest {
 	my ($this,$request) = @_;
 	push(@{$this->{requests}},$request);
+	return $request;
 }
 
 # trigger
@@ -216,9 +220,10 @@ sub getNewColumns {
 	return @{$this->{newColumns}};
 }
 
-sub addNewColumn {
+sub _addNewColumn {
 	my ($this,$columnName) = @_;
 	push(@{$this->{newColumns}},$columnName);
+	return $columnName;
 }
 
 sub getOldColumns {
@@ -226,7 +231,7 @@ sub getOldColumns {
 	return @{$this->{oldColumns}};
 }
 
-sub addOldColumn {
+sub _addOldColumn {
 	my ($this,$columnName) = @_;
 	push(@{$this->{oldColumns}},$columnName);
 }
@@ -235,7 +240,7 @@ sub addOldColumn {
 # ----------------------------------------------------
 
 # Return the number of function's arguments
-sub extractArgumentsNumber {
+sub _extractArgumentsNumber {
 	my ($this,$arguments) = @_;
 	
 	my @args = $arguments =~ /^\((.*?)\)$/g;
@@ -253,12 +258,12 @@ sub extractArgumentsNumber {
 }
 
 # Return a formated name for cursors and request
-sub buildName {
+sub _buildName {
 	my ($this,$type,$id) = @_;
 	return ($this->getName . '_' . $type . '_' . $id);
 }
 
-sub extractCursorDefinitions {
+sub _extractCursorDefinitions {
 	my ($this) = @_;
 	my @cursors = $this->getDeclareSection() =~ /(\w*)\s+CURSOR\s+(.*)FOR\s+(.*\;)/gi;
 	for(my $i = 0;$i <= ($#cursors - 1);$i+=2) {
@@ -267,7 +272,7 @@ sub extractCursorDefinitions {
 	}
 }
 
-sub extractRequests {
+sub _extractRequests {
 	my ($this) = @_;
 	my $reqNumber;
 	my @requests = $this->getBodySection() =~ /(SELECT|UPDATE|INSERT|DELETE)(.*?)(;)/gi;
@@ -278,44 +283,44 @@ sub extractRequests {
 		if(Configuration->getOption('exclude')) {
 			my $reqPattern = quotemeta($request);
 			my $body = $this->getBodySection();
-			$this->setBodySection($body =~ s/$reqPattern//gi);
+			$this->_setBodySection($body =~ s/$reqPattern//gi);
 		}
 		$reqNumber = $reqNumber + 1;
-		$this->addRequest(SqlRequest->new($this,$this->buildName('R',$reqNumber),$request));
+		$this->addRequest(SqlRequest->new($this,$this->_buildName('R',$reqNumber),$request));
 	}
 }
 
 # validate that the function name is not a cursor name
-sub isNotCursorName {
+sub _isNotCursorName {
 	my ($this,$cursorName) = @_;
 	return !(grep {$_ eq $cursorName} @{$this->{_cursors}})
 }
 
-sub extractInvokedFunctions {
+sub _extractInvokedFunctions {
 	my ($this,$code) = @_;
 	my @funcs = $code =~ /(\w+)$RE{balanced}{-parens=>'( )'}/g;
 	for(my $i = 0;$i <= ($#funcs - 1);$i+=2) {
 		# Before to add it at the invoked functions list, we must validate that it's not a cursor and it's not a PostgreSQL keyword
-		if($this->isNotCursorName($funcs[$i]) && PgKeywords->isNotKeyword($funcs[$i])) {
-			$this->addInvokedFunction(SqlFunctionInvocation->new($this,$funcs[$i],$this->extractArgumentsNumber($funcs[$i+1])));
-			$this->extractInvokedFunctions($funcs[$i+1]);
+		if($this->_isNotCursorName($funcs[$i]) && PgKeywords->isNotKeyword($funcs[$i])) {
+			$this->addInvokedFunction(SqlFunctionInvocation->new($this,$funcs[$i],$this->_extractArgumentsNumber($funcs[$i+1])));
+			$this->_extractInvokedFunctions($funcs[$i+1]);
 		}
 	}
 }
 
-sub extractNewOldColumns {
+sub _extractNewOldColumns {
 	my ($this,$code) = @_;
 	my @news = $code =~ /NEW.([\w\_\$\d]+)/gi;
 	my @olds = $code =~ /OLD.([\w\_\$\d]+)/gi;
 	foreach my $new (@news) {
-		$this->addNewColumn($new);
+		$this->_addNewColumn($new);
 	}
 	foreach my $old (@olds) {
-		$this->addOldColumn($old);
+		$this->_addOldColumn($old);
 	}
 }
 
-sub extractFunctionStructure {
+sub _extractFunctionStructure {
 	my ($this,$code) = @_;
 	my @items = $code =~ /((\"?(\w+)\"?\(((\w*\s\w*),?)*\))\sRETURNS\s(\w+\s?\w*)\s*LANGUAGE\s*(\w*))/i;
 	$this->setSignature($items[1]);
@@ -326,28 +331,28 @@ sub extractFunctionStructure {
 	# Extract the declare and the body sections 
 	my ($declare) = $code =~ /DECLARE(.*)BEGIN/i;
 	if($declare) {
-		$this->setDeclareSection($declare);
+		$this->_setDeclareSection($declare);
 	}
 	my ($body) = $code =~ /BEGIN\s(.*)/i;
 	if($body) {
-		$this->setBodySection($body);
+		$this->_setBodySection($body);
 	}
 	
 	# Extract the function arguments
 	my @params = $items[1] =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->addArg(SqlArgument->new($this,$p[0],$p[1]));
+		$this->_addArg(SqlArgument->new($this,$p[0],$p[1]));
 	}
 	if(@params != undef) {
 		$this->setArgumentsNumber(scalar(@params));
 	} else { $this->setArgumentsNumber(0); }
 	
-	$this->extractCursorDefinitions();
-	$this->extractRequests();
-	$this->extractInvokedFunctions($this->getBodySection());
+	$this->_extractCursorDefinitions();
+	$this->_extractRequests();
+	$this->_extractInvokedFunctions($this->getBodySection());
 	if($this->getReturnType() eq 'trigger') {
-		$this->extractNewOldColumns($this->getBodySection());
+		$this->_extractNewOldColumns($this->getBodySection());
 	}
 }
 

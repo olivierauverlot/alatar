@@ -20,7 +20,7 @@ sub new {
 	$this->{level} = '';
 	$this->{invokedFunction} = undef;
  	bless($this,$class);    
- 	$this->extractTriggerStructure($code);
+ 	$this->_extractTriggerStructure($code);
  	return $this;            
 }
 
@@ -83,7 +83,7 @@ sub setInvokedFunction {
 
 # Actions
 # ----------------------------------------------------
-sub extractTriggerStructure {
+sub _extractTriggerStructure {
 	my ($this,$code) = @_;
 	my @items = $code =~ /(.+?)\s(BEFORE|AFTER|INSTEAD\sOF)\s(INSERT|UPDATE|DELETE|TRUNCATE)\sON\s(.+?)\sFOR\sEACH\s(ROW|STATEMENT)\sEXECUTE\sPROCEDURE\s(.+)\(/gi;
 	$this->setName($items[0]);
@@ -94,8 +94,3 @@ sub extractTriggerStructure {
 	# pour le moment, on passe 0 arguments (il faudra vérifiquer le nombre d'arguments)
 	$this->setInvokedFunction(SqlFunctionInvocation->new($this,$items[5],0));
 }
-
-                                         
-                                         
-                                         
-                                         

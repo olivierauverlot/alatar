@@ -1,6 +1,5 @@
 package SqlDatabase;
 
-
 use Data::Dumper;
 use strict;
 use SqlFunction;
@@ -17,12 +16,14 @@ sub new {
 	};
  	bless($this,$class); 
  	$this->{resolver} = SqlResolver->new($this);
- 	$this->extractFunctions();
- 	$this->extractTriggers();
+ 	$this->_extractFunctions();
+ 	$this->_extractTriggers();
  	$this->{resolver}->resolveAllLinks();
  	return $this;            
 }
 
+# Setters and getters
+# -------------------------------------------------------------
 sub getName {
 	my ($this) = @_;
 	return $this->{name};
@@ -36,27 +37,12 @@ sub getSchema {
 sub addObject {
 	my ($this,$sqlObject) = @_;
 	push(@{$this->{objects}},$sqlObject);
+	return $sqlObject;
 }
 
 sub getObjects {
 	my ($this) = @_;
 	return @{$this->{objects}};
-}
-
-sub extractFunctions {
-	my ($this) = @_;
-	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
-	foreach my $fcode (@functions) {
-		$this->addObject(SqlFunction->new($this,$fcode));
-	}
-}
-
-sub extractTriggers {
-	my ($this) = @_;
-	my @triggers = $this->{schema} =~ /CREATE TRIGGER\s(.*?);/gi;
-	foreach my $trigger (@triggers) {
-		$this->addObject(SqlTrigger->new($this,$trigger));
-	}
 }
 
 sub getSqlFunctions {
@@ -112,6 +98,29 @@ sub getSqlCursorRequests {
 		}
 	}
 	return @requests;
+}
+
+# Actions
+# -------------------------------------------------------------
+
+sub _extractFunctions {
+	my ($this) = @_;
+	my $function;
+	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
+	foreach my $fcode (@functions) {
+		$function = $this->addObject(SqlFunction->new($this,$fcode));
+		# RECHERCHE DES COMMENTAIRES
+		# COMMENT ON FUNCTION affiche_etage(etage integer) IS 'Retourne l''étage ou rez-de-chaussée';
+		print $function->getName();
+	}
+}
+
+sub _extractTriggers {
+	my ($this) = @_;
+	my @triggers = $this->{schema} =~ /CREATE TRIGGER\s(.*?);/gi;
+	foreach my $trigger (@triggers) {
+		$this->addObject(SqlTrigger->new($this,$trigger));
+	}
 }
 
 1;

@@ -16,7 +16,7 @@ sub new {
 }
 
 # Resolve the invoked functions in a function
-sub resolveInvokedFunctions {
+sub _resolveInvokedFunctions {
 	my ($this) = @_;
 	my @functions = $this->{owner}->getSqlFunctions();
 	
@@ -37,7 +37,7 @@ sub resolveInvokedFunctions {
 }
 
 # Resolve the invoked function in a trigger definition
-sub resolveInvokedFunctionsByTriggers {
+sub _resolveInvokedFunctionsByTriggers {
 	my ($this) = @_;
 	my @triggers = $this->{owner}->getSqlTriggers();
 	my @functions = $this->{owner}->getSqlFunctions();
@@ -52,8 +52,8 @@ sub resolveInvokedFunctionsByTriggers {
 
 sub resolveAllLinks {
 	my ($this) = @_;
-	$this->resolveInvokedFunctions();
-	$this->resolveInvokedFunctionsByTriggers();
+	$this->_resolveInvokedFunctions();
+	$this->_resolveInvokedFunctionsByTriggers();
 }
 
 1;

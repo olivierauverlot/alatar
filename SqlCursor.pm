@@ -11,7 +11,7 @@ sub new {
 	$this->{args} = [ ];
 	$this->{argumentsNumber} = 0;
  	bless($this,$class);      
-	$this->extractArguments($args);
+	$this->_extractArguments($args);
  	return $this;            
 }
 
@@ -32,10 +32,11 @@ sub getArgs {
 	return @{$this->{args}};
 }
 
-sub addArg {
+sub _addArg {
 	my ($this,$sqlArg) = @_;
 	push(@{$this->{args}},$sqlArg);
 	$this->{argumentsNumber} = $this->{argumentsNumber} + 1;
+	return $sqlArg;
 }
 
 sub printArgs {
@@ -54,12 +55,12 @@ sub getArgumentsNumber {
 #  ----------------------------------------------------
 
 # Extract arguments
-sub extractArguments {
+sub _extractArguments {
 	my ($this,$args) = @_;
 	my @params = $args =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->addArg(SqlArgument->new($this,$p[0],$p[1]));
+		$this->_addArg(SqlArgument->new($this,$p[0],$p[1]));
 	}
 }
 
