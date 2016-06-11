@@ -109,9 +109,12 @@ sub _extractFunctions {
 	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
 	foreach my $fcode (@functions) {
 		$function = $this->addObject(SqlFunction->new($this,$fcode));
-		# RECHERCHE DES COMMENTAIRES
-		# COMMENT ON FUNCTION affiche_etage(etage integer) IS 'Retourne l''étage ou rez-de-chaussée';
-		print $function->getName();
+		my $signature = $function->getSignature();
+		$signature =~ s/\(/\\\(/;
+		$signature =~ s/\)/\\\)/;
+		if($this->{schema} =~ /COMMENT\sON\sFUNCTION\s$signature\sIS\s\'(.*?)\';/g) {
+			$function->hasComments();
+		}
 	}
 }
 

@@ -260,7 +260,7 @@ sub _extractArgumentsNumber {
 # Return a formated name for cursors and request
 sub _buildName {
 	my ($this,$type,$id) = @_;
-	return ($this->getName . '_' . $type . '_' . $id);
+	return ($this->getName . '_' . $this->getArgumentsNumber() . '_' . $type . '_' . $id);
 }
 
 sub _extractCursorDefinitions {
@@ -320,6 +320,14 @@ sub _extractNewOldColumns {
 	}
 }
 
+=begin
+CREATE TYPE dup_result AS (f1 int, f2 text);
+
+CREATE FUNCTION dup(int) RETURNS dup_result
+    AS $$ SELECT $1, CAST($1 AS text) || ' is text' $$
+    LANGUAGE SQL;
+=cut
+
 sub _extractFunctionStructure {
 	my ($this,$code) = @_;
 	my @items = $code =~ /((\"?(\w+)\"?\(((\w*\s\w*),?)*\))\sRETURNS\s(\w+\s?\w*)\s*LANGUAGE\s*(\w*))/i;
@@ -329,6 +337,8 @@ sub _extractFunctionStructure {
 	$this->setLanguage($items[6]);
 	
 	# Extract the declare and the body sections 
+	# only for pg/plsql functions
+	
 	my ($declare) = $code =~ /DECLARE(.*)BEGIN/i;
 	if($declare) {
 		$this->_setDeclareSection($declare);
@@ -351,6 +361,8 @@ sub _extractFunctionStructure {
 	$this->_extractCursorDefinitions();
 	$this->_extractRequests();
 	$this->_extractInvokedFunctions($this->getBodySection());
+	
+	
 	if($this->getReturnType() eq 'trigger') {
 		$this->_extractNewOldColumns($this->getBodySection());
 	}
