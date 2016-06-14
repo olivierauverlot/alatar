@@ -3,10 +3,9 @@ package SqlObject;
 use strict;
 
 sub new {
-	my ($class,$owner,$name) = @_;
+	my ($class,$owner) = @_;
 	my $this = {
-		owner => $owner,
-		name => ''
+		owner => $owner
 	};
  	bless($this,$class);      
  	return $this;            

@@ -4,6 +4,13 @@
 
 # http://search.cpan.org/~abigail/Regexp-Common-2016020301/lib/Regexp/Common.pm
 
+# Une fonction peut ne pas avoir de valeur de retour
+#CREATE FUNCTION sales_tax(subtotal real, OUT tax real) AS $$
+#BEGIN
+#    tax := subtotal * 0.06;
+#END;
+#$$ LANGUAGE plpgsql;
+
 use strict;
 use warnings;
 use Getopt::Long;
@@ -133,13 +140,36 @@ sub buildXmlFile {
 	$xmlWriter = new XML::Writer(OUTPUT => $xmlOutput, DATA_MODE => 1, DATA_INDENT=>2);
 	$xmlWriter->xmlDecl('UTF-8');
 	$xmlWriter->doctype('schema');
-	$xmlWriter->startTag('schema');
+	$xmlWriter->startTag('schema',
+		'clientEncoding' => $model->getClientEncoding()
+	);
+	
+	# --------------------------------------------------
+	# Extensions
+	# --------------------------------------------------
+	$xmlWriter->startTag('extensions');
+ 	foreach my $e ($model->getExtensions()) {
+	 	$xmlWriter->startTag('extension', 
+	 			'name' => $e->getName(),
+	 			'schema' => $e->getSchema()
+	 		);
+	 	$xmlWriter->startTag('comment');
+		$xmlWriter->cdata($e->getComment());
+		$xmlWriter->endTag();
+	 	$xmlWriter->endTag();
+ 	}
+ 	$xmlWriter->endTag();	# end of extensions list
+ 	
+ 	# --------------------------------------------------
+	# Functions
+	# --------------------------------------------------	
  	$xmlWriter->startTag('functions');
  	foreach my $f ($model->getSqlFunctions()) { 
  		$xmlWriter->startTag('function', 
  			'name' => $f->getName(),
  			'language' => $f->getLanguage(),
- 			'returnType' => $f->getReturnType()
+ 			'returnType' => $f->getReturnType(),
+ 			'comments' => ($f->isCommented() ? 'true' : 'false')
  		);
  		@args = $f->getArgs();
  		if(@args) {
@@ -288,6 +318,18 @@ sub buildXmlFile {
  		$xmlWriter->endTag();
  	}
 	$xmlWriter->endTag();	# end of trigger definition
+
+	# --------------------------------------------------
+	# Sequences
+	# --------------------------------------------------
+	$xmlWriter->startTag('sequences');
+ 	foreach my $t ($model->getSequences()) {
+ 		$xmlWriter->startTag('sequence', 
+ 			'name' => $t->getName()
+ 		);
+ 		$xmlWriter->endTag();
+ 	}
+ 	$xmlWriter->endTag();	# end of sequences list
 	
 	$xmlWriter->endTag();	# end of schema definition
 	$xmlWriter->end();

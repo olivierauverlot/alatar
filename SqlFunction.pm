@@ -18,7 +18,7 @@ sub new {
 	my ($class,$owner,$code) = @_;
  	my $this = $class->SUPER::new($owner);
  	$this->{args} = [ ];
- 	$this->{returnType} = '';
+ 	$this->{returnType} = 'void';
  	$this->{language} = '';
  	$this->{signature} = '';
  	$this->{argumentsNumber} = 0;
@@ -330,12 +330,17 @@ CREATE FUNCTION dup(int) RETURNS dup_result
 
 sub _extractFunctionStructure {
 	my ($this,$code) = @_;
-	my @items = $code =~ /((\"?(\w+)\"?\(((\w*\s\w*),?)*\))\sRETURNS\s(\w+\s?\w*)\s*LANGUAGE\s*(\w*))/i;
-	$this->setSignature($items[1]);
-	$this->setName($items[2]);
-	$this->setReturnType(trim($items[5])); 
-	$this->setLanguage($items[6]);
-	
+	my @items = $code =~ /(\"?(\w+)\"?\(((\w*\s\w*),?)*\))/i;
+	$this->setSignature($items[0]);
+	$this->setName($items[1]);
+	@items = $code =~ /RETURNS\s(\w+\s?\w*)/i;
+	if(@items) {
+		$this->setReturnType(trim($items[0])); 
+	}
+	@items = $code =~ /LANGUAGE\s*(\w*)/i;
+	if(@items) {
+		$this->setLanguage($items[0]);
+	}
 	# Extract the declare and the body sections 
 	# only for pg/plsql functions
 	
