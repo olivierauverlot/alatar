@@ -1,6 +1,8 @@
 # This script installs CPAN dependencies
 # --------------------------------------------------
 /usr/bin/env perl -MCPAN -e 'install App::cpanminus'
+cpanm PAR::Packer
+cpanm Test::Harness
 cpanm Data::Dumper
 cpanm String::Util
 cpanm Getopt::Long
