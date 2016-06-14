@@ -20,19 +20,16 @@ use XML::Writer;
 use IO::File;
 use File::Basename;
 use Configuration;
+use PgXMLExporter;
 use SqlDatabase;
 use SqlFunction;
 
 use utf8;
 
 my $VERSION = '0.1';
-my $REQUESTS_FOLDER = '/requests';
-my $CURSORS_FOLDER = '/cursors';
 
 my (@requestFiles,@cursorFiles);
-
 my (@userFunctionsList,%invokedFunctions);
-
 my ($model,$conf);
 
 sub version {
@@ -130,216 +127,11 @@ sub createCompactSchema {
 	close($fd);
 }
 
-# Produce serialized version of the object representation (XML)
-sub buildXmlFile {
-	my ($xmlFileName,$xmlOutput,$xmlWriter);
-	my (@args,@requests,@cursors,@invokedMethods,@callers,@row);
-	$xmlFileName = Configuration->getOption('xmlFilePath');
-	$xmlFileName =~ s/\.\w+/.xml/g;
-	$xmlOutput = new IO::File(">$xmlFileName");
-	$xmlWriter = new XML::Writer(OUTPUT => $xmlOutput, DATA_MODE => 1, DATA_INDENT=>2);
-	$xmlWriter->xmlDecl('UTF-8');
-	$xmlWriter->doctype('schema');
-	$xmlWriter->startTag('schema',
-		'clientEncoding' => $model->getClientEncoding()
-	);
-	
-	# --------------------------------------------------
-	# Extensions
-	# --------------------------------------------------
-	$xmlWriter->startTag('extensions');
- 	foreach my $e ($model->getExtensions()) {
-	 	$xmlWriter->startTag('extension', 
-	 			'name' => $e->getName(),
-	 			'schema' => $e->getSchema()
-	 		);
-	 	$xmlWriter->startTag('comment');
-		$xmlWriter->cdata($e->getComment());
-		$xmlWriter->endTag();
-	 	$xmlWriter->endTag();
- 	}
- 	$xmlWriter->endTag();	# end of extensions list
- 	
- 	# --------------------------------------------------
-	# Functions
-	# --------------------------------------------------	
- 	$xmlWriter->startTag('functions');
- 	foreach my $f ($model->getSqlFunctions()) { 
- 		$xmlWriter->startTag('function', 
- 			'name' => $f->getName(),
- 			'language' => $f->getLanguage(),
- 			'returnType' => $f->getReturnType(),
- 			'comments' => ($f->isCommented() ? 'true' : 'false')
- 		);
- 		@args = $f->getArgs();
- 		if(@args) {
-	 		$xmlWriter->startTag('arguments');
-	 		foreach my $a (@args) {
-	 			$xmlWriter->startTag('argument');
-	 			$xmlWriter->startTag('name');
-	 			$xmlWriter->characters($a->getName());
-	 			$xmlWriter->endTag();
-	 			$xmlWriter->startTag('type');
-	 			$xmlWriter->characters($a->getType());
-	 			$xmlWriter->endTag();
-	 			$xmlWriter->endTag();
-	 		}
-	 		$xmlWriter->endTag();
- 		}
- 		if($f->getAllRequests()) {
- 			@requests = $f->getSqlRequests();
- 			if(@requests) {
-		 		$xmlWriter->startTag('requests');
-		 		foreach my $r (@requests) {
-					$xmlWriter->startTag('request',
-						'name' => $r->getName()
-					);
-					$xmlWriter->startTag('sql');
-					$xmlWriter->cdata($r->getRequest());
-		 			$xmlWriter->endTag();
-		 			$xmlWriter->startTag('json');
-		 			my $dest = Configuration->getOption('requestsPath') . $REQUESTS_FOLDER . '/' . $r->getName() . '.sql';
-		 			my $jsonData = qx { ./bin/parse_file "$dest"};
-					$xmlWriter->cdata($jsonData);
-		 			$xmlWriter->endTag();
-		 			$xmlWriter->endTag();
-		 		}
-		 		$xmlWriter->endTag();
- 			}
- 			@cursors = $f->getSqlCursorRequests();
- 			
-			if(@cursors) {
-				$xmlWriter->startTag('cursors');
-		 		foreach my $r (@cursors) {
-					$xmlWriter->startTag('cursor',
-						'name' => $r->getName()
-					);
-					@args = $r->getArgs();
-					if(@args) {
-						$xmlWriter->startTag('arguments');
-						foreach $a (@args) {
-							$xmlWriter->startTag('argument');
-				 			$xmlWriter->startTag('name');
-				 			$xmlWriter->characters($a->getName());
-				 			$xmlWriter->endTag();
-				 			$xmlWriter->startTag('type');
-				 			$xmlWriter->characters($a->getType());
-				 			$xmlWriter->endTag();
-				 			$xmlWriter->endTag();
-						}
-						$xmlWriter->endTag();
-					}
-					$xmlWriter->startTag('code');
-					$xmlWriter->cdata($r->getRequest());
-		 			$xmlWriter->endTag();
-		 			$xmlWriter->startTag('json');
-		 			my $dest = Configuration->getOption('requestsPath') . $CURSORS_FOLDER . '/' . $r->getName() . '.sql';
-		 			my $jsonData = qx { ./bin/parse_file "$dest"};
-					$xmlWriter->cdata($jsonData);
-		 			$xmlWriter->endTag();
-		 			$xmlWriter->endTag();
-		 		}
-		 		$xmlWriter->endTag();
-			}
-		}
-		@invokedMethods = $f->getInvokedFunctions();
-		if(@invokedMethods) {
-	 		$xmlWriter->startTag('invokedFunctions');
-	 		foreach my $if (@invokedMethods) {
-	 			$xmlWriter->startTag('invokedFunction',
-	 				'argumentsNumber' => $if->getArgumentsNumber(),
-	 				'stub' => ($if->isStub() ? 'true' : 'false')
-	 			);
-	 			$xmlWriter->characters($if->getName());
-	 			$xmlWriter->endTag();
-	 		}
-	 		$xmlWriter->endTag();
-		}
-		@callers = $f->getCallers();
-		if(@callers) {
-			$xmlWriter->startTag('callers');
-	 		foreach my $caller (@callers) {
-	 			$xmlWriter->startTag('caller',
-	 				'argumentsNumber' => $caller->getArgumentsNumber(),
-	 				'stub' => ($caller->isStub() ? 'true' : 'false')
-	 			);
-	 			$xmlWriter->characters($caller->getName());
-	 			$xmlWriter->endTag();
-	 		}
-	 		$xmlWriter->endTag();
-		}
-
- 		if($f->isTriggerFunction()) {
- 			@row = $f->getNewColumns();
- 			if(@row) {
- 				$xmlWriter->startTag('newRow');
- 				foreach my $c (@row) {
- 					$xmlWriter->startTag('new');
- 					$xmlWriter->characters($c);
- 					$xmlWriter->endTag();
- 				}
- 				$xmlWriter->endTag();
- 			}
- 			@row = $f->getOldColumns();
- 			if(@row) {
- 				$xmlWriter->startTag('oldRow');
- 				foreach my $c (@row) {
- 					$xmlWriter->startTag('old');
- 					$xmlWriter->characters($c);
- 					$xmlWriter->endTag();
- 				}
- 				$xmlWriter->endTag();
- 			}
- 		}
- 		$xmlWriter->endTag();
- 	}
- 	$xmlWriter->endTag();	# end of function definition
-	
-	# --------------------------------------------------
-	# Trigger definitions
-	# --------------------------------------------------
-	$xmlWriter->startTag('triggers');
- 	foreach my $t ($model->getSqlTriggers()) { 
- 		$xmlWriter->startTag('trigger', 
- 			'name' => $t->getName(),
- 			'event' => $t->getEvent(),
- 			'fire' => $t->getFire(),
- 			'level' => $t->getLevel()
- 		);
- 		$xmlWriter->startTag('table');
-	 	$xmlWriter->characters($t->getTable());
-	 	$xmlWriter->endTag();
-	 	$xmlWriter->startTag('invokedFunction',
-	 		'argumentsNumber' => ($t->getInvokedFunction()->getArgumentsNumber()),
-	 		'stub' => ($t->getInvokedFunction()->isStub() ? 'true' : 'false')
-	 		);
-	 	$xmlWriter->characters($t->getInvokedFunction()->getName());
-	 	$xmlWriter->endTag();
- 		$xmlWriter->endTag();
- 	}
-	$xmlWriter->endTag();	# end of trigger definition
-
-	# --------------------------------------------------
-	# Sequences
-	# --------------------------------------------------
-	$xmlWriter->startTag('sequences');
- 	foreach my $t ($model->getSequences()) {
- 		$xmlWriter->startTag('sequence', 
- 			'name' => $t->getName()
- 		);
- 		$xmlWriter->endTag();
- 	}
- 	$xmlWriter->endTag();	# end of sequences list
-	
-	$xmlWriter->endTag();	# end of schema definition
-	$xmlWriter->end();
-}
-
 # Gentlemen, start your engines!
 sub run {
 	my ($schema);
 
-	my @subFolders = ($REQUESTS_FOLDER , $CURSORS_FOLDER);
+	my @subFolders = (Configuration->getOption('requests_folder') , Configuration->getOption('cursors_folder'));
 	
 	$schema = loadSQLSchema();
 	$model = SqlDatabase->new(Configuration->getOption('schemaPath'),cleanSchema($schema));
@@ -361,11 +153,13 @@ sub run {
 	
 	# Produce serialized version of the object representation (XML)
 	if(Configuration->getOption('xmlFilePath')) {
-		buildXmlFile();
+		PgXMLExporter->new($model);
 	}
 }
 
 # Default values
+Configuration->setOption('requests_folder','/requests');
+Configuration->setOption('cursors_folder','/cursors');
 Configuration->setOption('exclude',0);
 Configuration->setOption('schemaPath',undef);
 Configuration->setOption('simplifiedSchemaPath',undef);
