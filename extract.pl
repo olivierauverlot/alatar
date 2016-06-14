@@ -83,12 +83,12 @@ sub protectPath {
 sub saveRequests {
 	my $dest;
 	foreach my $r ($model->getSqlRequests()) {
-		$dest = Configuration->getOption('requestsPath') . $REQUESTS_FOLDER . '/' . $r->getName() . '.sql';
+		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
 		push(@requestFiles,$r->getName());
 		saveRequest($dest,$r->getRequest());
 	}
 	foreach my $r ($model->getSqlCursorRequests()) {
-		$dest = Configuration->getOption('requestsPath') . $CURSORS_FOLDER . '/' . $r->getName() . '.sql';
+		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->getName() . '.sql';
 		push(@cursorFiles,$r->getName());
 		saveRequest($dest,$r->getRequest());
 	}
