@@ -3,9 +3,10 @@ package SqlObject;
 use strict;
 
 sub new {
-	my ($class,$owner) = @_;
+	my ($class,$owner,$name) = @_;
 	my $this = {
-		owner => $owner
+		owner => $owner,
+		name => $name
 	};
  	bless($this,$class);      
  	return $this;            
@@ -62,6 +63,11 @@ sub isSqlFunctionInvocation {
 }
 
 sub isSqlCursor {
+	my ($this) = @_;
+	return 0;
+}
+
+sub isSqlColumn {
 	my ($this) = @_;
 	return 0;
 }

@@ -3,10 +3,11 @@ package SqlDatabase;
 use Data::Dumper;
 use strict;
 use PgExtension;
-use SqlSequence;
 use SqlFunction;
-use SqlTrigger; 
 use SqlResolver;
+use SqlSequence;
+use SqlTable;
+use SqlTrigger; 
 
 sub new {
 	my ($class,$name,$schema) = @_;
@@ -19,12 +20,15 @@ sub new {
 		resolver => undef
 	};
  	bless($this,$class); 
- 	$this->{resolver} = SqlResolver->new($this);
- 	$this->_extractDatabaseSetup();
- 	$this->_extractSequences();
- 	$this->_extractFunctions();
- 	$this->_extractTriggers();
- 	$this->{resolver}->resolveAllLinks();
+ 	if(defined($schema)) {
+	 	$this->{resolver} = SqlResolver->new($this);
+	 	$this->_extractDatabaseSetup();
+	 	$this->_extractTables();
+	 	$this->_extractSequences();
+	 	$this->_extractFunctions();
+	 	$this->_extractTriggers();
+	 	$this->{resolver}->resolveAllLinks();
+ 	}
  	return $this;            
 }
 
@@ -179,6 +183,14 @@ sub _extractSequences {
 	my @sequences = $this->{schema} =~ /CREATE\sSEQUENCE\s(.*?)\s/gi;
 	foreach my $sequence (@sequences) {
 		$this->addObject(SqlSequence->new($this,$sequence));
+	}
+}
+
+sub _extractTables {
+	my ($this) = @_;
+	my @tables = $this->{schema} =~ /CREATE\sTABLE\s(.*?);/gi;
+	foreach my $table (@tables) {
+		$this->addObject(SqlTable->new($this,$table));
 	}
 }
 

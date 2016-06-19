@@ -1,7 +1,6 @@
 package PgExtension;
 
 use strict;
-use SqlObject;
 
 sub new {
 	my ($class,$name,$schema,$comment) = @_;

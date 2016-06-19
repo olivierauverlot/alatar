@@ -13,7 +13,7 @@ our @ISA = qw(SqlObject);
 
 sub new {
 	my ($class,$owner,$code) = @_;
- 	my $this = $class->SUPER::new($owner);
+ 	my $this = $class->SUPER::new($owner,'undef');
 	$this->{fire} = '';
 	$this->{event} = '';
 	$this->{table} = '';

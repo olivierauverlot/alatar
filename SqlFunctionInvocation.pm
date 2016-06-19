@@ -8,8 +8,7 @@ our @ISA = qw(SqlObject);
 
 sub new {
 	my ($class,$owner,$name,$argumentsNumber) = @_;
-	my $this = $class->SUPER::new($owner);
-	$this->setName($name);
+	my $this = $class->SUPER::new($owner,$name);
 	$this->{argumentsNumber} = $argumentsNumber;
 	$this->{functionReference} = undef;
  	bless($this,$class);      

@@ -7,8 +7,7 @@ our @ISA = qw(SqlObject);
 
 sub new {
 	my ($class,$owner,$name,$type) = @_;
-	my $this = $class->SUPER::new($owner);
-	$this->setName($name);
+	my $this = $class->SUPER::new($owner,$name);
    	$this->{type} = $type;
  	bless($this,$class);      
  	return $this;            
