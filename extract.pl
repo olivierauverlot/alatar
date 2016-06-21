@@ -41,7 +41,7 @@ sub loadSQLSchema {
 	my ($filePath) = @_;
 	my $data;
 	
-	open(DATA,Configuration->getOption('schemaPath')) || die "You must specify a SQL schema";
+	open(DATA,$filePath) || die "You must specify a SQL schema";
 	while( defined( my $l = <DATA> ) ) {
    		$data = $data . $l;
 	}
@@ -120,7 +120,7 @@ sub createCompactSchema {
 	open($fd,'>',$destPath) || die "Cannot create the compact schema";
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+TABLE\s.*?\);)/gs);
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+VIEW.*?;)/gs);
-	addToCompactSchema($fd,$schema =~ /(CREATE FUNCTION\s(.*?)END;\$\$;)/gs);
+	addToCompactSchema($fd,$schema =~ /(CREATE\sFUNCTION\s.*?END;\$\$;)/gs);
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+TRIGGER\s.*?;)/gs);
 	addToCompactSchema($fd,$schema =~ /(ALTER\sTABLE[^;]*FOREIGN\sKEY.*?;)/gs);
 	addToCompactSchema($fd,$schema =~ /(ALTER\sTABLE[^;]*PRIMARY\sKEY.*?;)/gs);
@@ -133,7 +133,8 @@ sub run {
 
 	my @subFolders = (Configuration->getOption('requests_folder') , Configuration->getOption('cursors_folder'));
 	
-	$schema = loadSQLSchema();
+	$schema = loadSQLSchema(Configuration->getOption('schemaPath'));
+
 	$model = SqlDatabase->new(Configuration->getOption('schemaPath'),cleanSchema($schema));
 
 	if(Configuration->getOption('requestsPath')) {
@@ -146,14 +147,14 @@ sub run {
 		saveRequests();
 	}
 	
-	# Create a compact version of the schema
-	if(Configuration->getOption('simplifiedSchemaPath')) {
-		createCompactSchema(Configuration->getOption('simplifiedSchemaPath'),$schema);
-	}
-	
 	# Produce serialized version of the object representation (XML)
 	if(Configuration->getOption('xmlFilePath')) {
 		PgXMLExporter->new($model);
+	}
+	
+	# Create a compact version of the schema
+	if(Configuration->getOption('simplifiedSchemaPath')) {
+		createCompactSchema(Configuration->getOption('simplifiedSchemaPath'),$schema);
 	}
 }
 
