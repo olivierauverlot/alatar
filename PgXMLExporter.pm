@@ -54,6 +54,7 @@ sub _addExtensions {
 sub _addFunctions {
 	my ($this) = @_;
 	my (@args,@requests,@cursors,@invokedMethods,@callers,@row);
+	my $parseFilePath = Configuration->getOption('appFolder') . '/bin/parse_file';
 	
  	$this->{xmlWriter}->startTag('functions');
  	foreach my $f ($this->{model}->getSqlFunctions()) { 
@@ -89,11 +90,13 @@ sub _addFunctions {
 					$this->{xmlWriter}->startTag('sql');
 					$this->{xmlWriter}->cdata($r->getRequest());
 		 			$this->{xmlWriter}->endTag();
-		 			$this->{xmlWriter}->startTag('json');
-		 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
-		 			my $jsonData = qx { ./bin/parse_file "$dest"};
-					$this->{xmlWriter}->cdata($jsonData);
-		 			$this->{xmlWriter}->endTag();
+		 			if(Configuration->getOption('requestsPath')) {
+			 			$this->{xmlWriter}->startTag('json');
+			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
+			 			my $jsonData = qx { $parseFilePath "$dest"};
+						$this->{xmlWriter}->cdata($jsonData);
+			 			$this->{xmlWriter}->endTag();
+		 			}
 		 			$this->{xmlWriter}->endTag();
 		 		}
 		 		$this->{xmlWriter}->endTag();
@@ -124,11 +127,13 @@ sub _addFunctions {
 					$this->{xmlWriter}->startTag('code');
 					$this->{xmlWriter}->cdata($r->getRequest());
 		 			$this->{xmlWriter}->endTag();
-		 			$this->{xmlWriter}->startTag('json');
-		 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->getName() . '.sql';
-		 			my $jsonData = qx { ./bin/parse_file "$dest"};
-					$this->{xmlWriter}->cdata($jsonData);
-		 			$this->{xmlWriter}->endTag();
+		 			if(Configuration->getOption('requestsPath')) {
+			 			$this->{xmlWriter}->startTag('json');
+			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->getName() . '.sql';
+			 			my $jsonData = qx { $parseFilePath "$dest"};
+						$this->{xmlWriter}->cdata($jsonData);
+			 			$this->{xmlWriter}->endTag();
+		 			}
 		 			$this->{xmlWriter}->endTag();
 		 		}
 		 		$this->{xmlWriter}->endTag();

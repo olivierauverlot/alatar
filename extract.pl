@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use Getopt::Long;
 use File::Path;
+use File::Basename;
 use Data::Dumper;
 use XML::Writer;
 use IO::File;
@@ -35,6 +36,11 @@ my ($model,$conf);
 sub version {
 	print "Alatar version $VERSION\n\n";
 	exit 1;
+}
+
+# return the folder that contains the application
+sub defineAppFolder {
+	return dirname $0;
 }
 
 sub loadSQLSchema {
@@ -159,13 +165,14 @@ sub run {
 }
 
 # Default values
+Configuration->setOption('appFolder',defineAppFolder());
 Configuration->setOption('requests_folder','/requests');
 Configuration->setOption('cursors_folder','/cursors');
 Configuration->setOption('exclude',0);
 Configuration->setOption('schemaPath',undef);
 Configuration->setOption('simplifiedSchemaPath',undef);
 Configuration->setOption('xmlFilePath',undef);
-Configuration->setOption('RequestsPath','/tmp');
+Configuration->setOption('RequestsPath',undef);
 
 # Command line parameters
 sub setSchemaPath { 
