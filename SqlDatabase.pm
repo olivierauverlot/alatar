@@ -3,6 +3,7 @@ package SqlDatabase;
 use Data::Dumper;
 use strict;
 use PgExtension;
+use PgFunctionExtractor;
 use SqlFunction;
 use SqlResolver;
 use SqlSequence;
@@ -160,6 +161,15 @@ sub _extractFunctions {
 	my ($this) = @_;
 	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
 	foreach my $fcode (@functions) {
+		PgFunctionExtractor->new($this,$this->{objects},$fcode);
+	}
+}
+
+=begin
+sub _extractFunctions {
+	my ($this) = @_;
+	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
+	foreach my $fcode (@functions) {
 		my $function = $this->addObject(SqlFunction->new($this,$fcode));
 		my $signature = $function->getSignature();
 		$signature =~ s/\(/\\\(/;
@@ -169,6 +179,7 @@ sub _extractFunctions {
 		}
 	}
 }
+=cut
 
 sub _extractTriggers {
 	my ($this) = @_;

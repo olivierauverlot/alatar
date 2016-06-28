@@ -11,3 +11,4 @@ cpanm File::Path
 cpanm XML::Writer
 cpanm IO::File
 cpanm File::Basename
+cpanm Attribute::Abstract
