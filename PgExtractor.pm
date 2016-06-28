@@ -5,14 +5,16 @@ use strict;
 
 use Data::Dumper;
 sub new {
-	my ($class,$owner,$objects,$code,@properties) = @_;
+	my ($class,$owner,$code) = @_;
 	my $this = { 
 		owner => $owner,
-		objects => $objects
+		entity => undef
 	};
+=begin
 	foreach my $var (@properties) {
 		$this->{$var} = undef;
 	}
+=cut
  	bless($this,$class); 
  	if(defined($code)) {
 	 	$this->_extractObject($code);
@@ -22,10 +24,12 @@ sub new {
 
 # setters and getters
 # --------------------------------------------------
-sub addObject {
-	my ($this,$sqlObject) = @_;
-	push(@{$this->{objects}},$sqlObject);
-	return $sqlObject;
+
+# getter
+# --------------------------------------------------
+sub getEntity {
+	my($this) = @_;
+	return $this->{entity};
 }
 
 # actions

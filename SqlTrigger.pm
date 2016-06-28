@@ -12,7 +12,7 @@ our @ISA = qw(SqlObject);
 # On ne conserve que le nom de la table, il faudrait une référence vers la table
 
 sub new {
-	my ($class,$owner,$code) = @_;
+	my ($class,$owner) = @_;
  	my $this = $class->SUPER::new($owner,'undef');
 	$this->{fire} = '';
 	$this->{event} = '';
@@ -20,7 +20,6 @@ sub new {
 	$this->{level} = '';
 	$this->{invokedFunction} = undef;
  	bless($this,$class);    
- 	$this->_extractTriggerStructure($code);
  	return $this;            
 }
 
@@ -81,16 +80,3 @@ sub setInvokedFunction {
 	$this->{invokedFunction} = $value;	
 }
 
-# Actions
-# ----------------------------------------------------
-sub _extractTriggerStructure {
-	my ($this,$code) = @_;
-	my @items = $code =~ /(.+?)\s(BEFORE|AFTER|INSTEAD\sOF)\s(INSERT|UPDATE|DELETE|TRUNCATE)\sON\s(.+?)\sFOR\sEACH\s(ROW|STATEMENT)\sEXECUTE\sPROCEDURE\s(.+)\(/gi;
-	$this->setName($items[0]);
-	$this->setFire($items[1]);
-	$this->setEvent($items[2]);
-	$this->setTable($items[3]);
-	$this->setLevel($items[4]);
-	# pour le moment, on passe 0 arguments (il faudra vérifiquer le nombre d'arguments)
-	$this->setInvokedFunction(SqlFunctionInvocation->new($this,$items[5],0));
-}
