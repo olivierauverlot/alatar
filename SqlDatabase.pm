@@ -4,6 +4,7 @@ use Data::Dumper;
 use strict;
 use PgExtension;
 use PgFunctionExtractor;
+use PgTriggerExtractor;
 use SqlFunction;
 use SqlResolver;
 use SqlSequence;
@@ -67,9 +68,30 @@ sub addObject {
 	return $sqlObject;
 }
 
+sub addObjects {
+	my ($this,$sqlObjects) = @_;
+	return $this->addObject($sqlObjects);
+}
+
+sub getObjectsWithName {
+	my ($this,$name,@objects) = @_;
+	return (grep { $_->getName() eq $name} @objects);
+}
+
 sub getObjects {
 	my ($this) = @_;
 	return @{$this->{objects}};
+}
+
+sub getSqlTables {
+	my ($this) = @_;
+	my @tables;
+	foreach my $obj ($this->getObjects()) {
+	 	if($obj->isSqlTable()) {
+	 		push(@tables,$obj);
+	 	}
+	}
+	return @tables;
 }
 
 sub getSqlFunctions {
@@ -157,35 +179,12 @@ sub _extractDatabaseSetup {
 	}
 }
 
-sub _extractFunctions {
+sub _extractTables {
 	my ($this) = @_;
-	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
-	foreach my $fcode (@functions) {
-		PgFunctionExtractor->new($this,$this->{objects},$fcode);
-	}
-}
-
-=begin
-sub _extractFunctions {
-	my ($this) = @_;
-	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
-	foreach my $fcode (@functions) {
-		my $function = $this->addObject(SqlFunction->new($this,$fcode));
-		my $signature = $function->getSignature();
-		$signature =~ s/\(/\\\(/;
-		$signature =~ s/\)/\\\)/;
-		if($this->{schema} =~ /COMMENT\sON\sFUNCTION\s$signature\sIS\s\'(.*?)\';/g) {
-			$function->hasComments();
-		}
-	}
-}
-=cut
-
-sub _extractTriggers {
-	my ($this) = @_;
-	my @triggers = $this->{schema} =~ /CREATE TRIGGER\s(.*?);/gi;
-	foreach my $trigger (@triggers) {
-		$this->addObject(SqlTrigger->new($this,$trigger));
+	my @tables = $this->{schema} =~ /CREATE\sTABLE\s(.*?);/gi;
+	foreach my $table (@tables) {
+		my $extractor = PgTableExtractor->new($this,$table);
+		$this->addObjects($extractor->getEntity());
 	}
 }
 
@@ -197,12 +196,32 @@ sub _extractSequences {
 	}
 }
 
-sub _extractTables {
+sub _extractFunctions {
 	my ($this) = @_;
-	my @tables = $this->{schema} =~ /CREATE\sTABLE\s(.*?);/gi;
-	foreach my $table (@tables) {
-		$this->addObject(SqlTable->new($this,$table));
+	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
+	foreach my $fcode (@functions) {
+		my $extractor = PgFunctionExtractor->new($this,$fcode);
+		my $function = $extractor->getEntity();
+		$this->addObject($function);
+		
+		my $signature =$function->getSignature();
+		$signature =~ s/\(/\\\(/;
+		$signature =~ s/\)/\\\)/;
+		if($this->{schema} =~ /COMMENT\sON\sFUNCTION\s$signature\sIS\s\'(.*?)\';/g) {
+			$function->hasComments();
+		}
 	}
 }
+
+sub _extractTriggers {
+	my ($this) = @_;
+	my @triggers = $this->{schema} =~ /CREATE TRIGGER\s(.*?);/gi;
+	foreach my $trigger (@triggers) {
+		my $extractor = PgTriggerExtractor->new($this,$trigger);
+		$this->addObject($extractor->getEntity());
+	}
+}
+
+
 
 1;

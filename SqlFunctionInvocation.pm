@@ -26,6 +26,16 @@ sub isStub {
 	return !defined($this->getFunctionReference())
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlFunctionInvocation';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name} . ' with ' . $this->getArgumentsNumber();
+}
+
 # Setters and getters
 # ----------------------------------------------------
 sub getArgumentsNumber {

@@ -6,6 +6,7 @@ use String::Util qw(trim);
 use Regexp::Common;
 use Configuration;
 use PgExtractor;
+use PgTableExtractor;
 use PgKeywords;
 use SqlFunction;
 use SqlArgument;

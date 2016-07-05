@@ -13,6 +13,16 @@ sub new {
  	return $this;            
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlArgument';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name} . ' = ' . $this->{type};
+}
+
 sub isSqlArgument {
 	my ($this) = @_;
 	return 1;

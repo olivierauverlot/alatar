@@ -5,8 +5,8 @@ use strict;
 our @ISA = qw(PgExtractor);
 
 sub new {
-	my ($class,$owner,$objects,$code) = @_;
-	my $this = $class->SUPER::new($owner,$objects,$code);
+	my ($class,$owner,$code) = @_;
+	my $this = $class->SUPER::new($owner,$code);
  	bless($this,$class);
  	return $this;            
 }

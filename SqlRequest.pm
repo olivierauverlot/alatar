@@ -18,6 +18,16 @@ sub isSqlRequest {
 	return 1;
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlRequest';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name};
+}
+
 sub getRequest {
 	my ($this) = @_;
 	return $this->{request};

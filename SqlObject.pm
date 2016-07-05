@@ -1,6 +1,7 @@
 package SqlObject;
 
 use strict;
+use Attribute::Abstract;
 
 sub new {
 	my ($class,$owner,$name) = @_;
@@ -10,6 +11,13 @@ sub new {
 	};
  	bless($this,$class);      
  	return $this;            
+}
+
+sub printString: Abstract;
+
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlObject';
 }
 
 sub getOwner {

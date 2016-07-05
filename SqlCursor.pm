@@ -25,6 +25,16 @@ sub isSqlCursor {
 	return 1;
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlCursor';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name};
+}
+
 # Cursor arguments
 # ----------------------------------------------------
 sub getArgs {
@@ -32,7 +42,7 @@ sub getArgs {
 	return @{$this->{args}};
 }
 
-sub _addArg {
+sub addArg {
 	my ($this,$sqlArg) = @_;
 	push(@{$this->{args}},$sqlArg);
 	$this->{argumentsNumber} = $this->{argumentsNumber} + 1;
@@ -60,7 +70,7 @@ sub _extractArguments {
 	my @params = $args =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->_addArg(SqlArgument->new($this,$p[0],$p[1]));
+		$this->addArg(SqlArgument->new($this,$p[0],$p[1]));
 	}
 }
 

@@ -2,7 +2,6 @@ package SqlTrigger;
 
 use strict;
 use Data::Dumper;
-use String::Util qw(trim);
 use Regexp::Common;
 use SqlObject;
 
@@ -26,6 +25,16 @@ sub new {
 sub isSqlTrigger {
 	my ($this) = @_;
 	return 1;
+}
+
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlTrigger';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType();
 }
 
 # setters and getters

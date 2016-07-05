@@ -1,7 +1,7 @@
 package PgExtractor;
 
-use Attribute::Abstract;
 use strict;
+use Attribute::Abstract;
 
 use Data::Dumper;
 sub new {
@@ -25,8 +25,6 @@ sub new {
 # setters and getters
 # --------------------------------------------------
 
-# getter
-# --------------------------------------------------
 sub getEntity {
 	my($this) = @_;
 	return $this->{entity};

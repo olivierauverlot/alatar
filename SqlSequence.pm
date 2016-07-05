@@ -17,4 +17,14 @@ sub isSqlSequence {
 	return 1;
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlSequence';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name};
+}
+
 1;

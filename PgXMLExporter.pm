@@ -21,6 +21,7 @@ sub new {
 	);
 	$this->_addExtensions();
 	$this->_addFunctions();
+	$this->_addTables();
 	$this->_addTriggerDefinitions();
 	$this->_addSequences();
 	$this->{xmlWriter}->endTag();	# end of schema definition
@@ -191,6 +192,33 @@ sub _addFunctions {
  		$this->{xmlWriter}->endTag();
  	}
  	$this->{xmlWriter}->endTag();	# end of function definition
+}
+
+# --------------------------------------------------
+# Table definitions
+# --------------------------------------------------
+sub _addTables {
+	my ($this) = @_;
+	$this->{xmlWriter}->startTag('tables');
+	foreach my $t ($this->{model}->getSqlTables()) {
+		$this->{xmlWriter}->startTag('table',
+			'name' => $t->getName()
+		);
+		$this->{xmlWriter}->startTag('columns');
+		foreach my $c ($t->getColumns()) {
+			$this->{xmlWriter}->startTag('column',
+				'name' => $c->getName(),
+				'dataType' => $c->getDataType(),
+				'notNull' => ($c->isNotNull() ? 'true' : 'false'),
+				'primaryKey' => ($c->isPk() ? 'true' : 'false'),
+				'foreignKey' => ($c->isFk() ? 'true' : 'false')
+			);
+			$this->{xmlWriter}->endTag();
+		}
+		$this->{xmlWriter}->endTag();
+		$this->{xmlWriter}->endTag();
+	}
+	$this->{xmlWriter}->endTag();	# end of table definition
 }
 
 # --------------------------------------------------

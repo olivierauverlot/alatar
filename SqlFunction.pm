@@ -35,6 +35,16 @@ sub isSqlFunction {
 	return 1;
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlFunction';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name} . ' with ' . $this->getArgumentsNumber();
+}
+
 # Function arguments
 # ----------------------------------------------------
 sub getArgs {

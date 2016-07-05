@@ -6,38 +6,14 @@ use SqlObject;
 our @ISA = qw(SqlObject);
 
 sub new {
-	my ($class,$owner,$name,$dataType,$constraints) = @_;
+	my ($class,$owner,$name,$dataType) = @_;
 	my $this = $class->SUPER::new($owner,$name);
 	$this->{dataType} = $dataType;
 	$this->{pk} = 0;
 	$this->{fk} = 0;
-	$this->{constraints} = [ ];
+	$this->{notNull} = 0;
  	bless($this,$class);   
- 	$this->_extractColumnConstraints($constraints);
  	return $this;            
-}
-
-# Setters and getters
-# -----------------------------------------------------------------------------
-
-sub getDataType {
-	my ($this) = @_;
-	return $this->{dataType};
-}
-
-sub isPK {
-	my ($this) = @_;
-	return $this->{pk};
-}
-
-sub isFK {
-	my ($this) = @_;
-	return $this->{fk};
-}
-
-sub getConstraints {
-	my ($this) = @_;
-	return $this->{constraints};
 }
 
 sub isSqlColumn {
@@ -45,11 +21,52 @@ sub isSqlColumn {
 	return 0;
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlColumn';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name} . ' = ' . $this->{type};
+}
+
+# Setters and getters
+# -----------------------------------------------------------------------------
+
+sub setDataType {
+	my ($this,$dataType) = @_;
+	$this->{dataType} = $dataType;
+}
+
+sub getDataType {
+	my ($this) = @_;
+	return $this->{dataType};
+}
+
+sub isPk {
+	my ($this) = @_;
+	return $this->{pk};
+}
+
+sub isFk {
+	my ($this) = @_;
+	return $this->{fk};
+}
+
+sub setNotNull {
+	my ($this) = @_;
+	$this->{notNull} = 1;
+}
+
+sub isNotNull {
+	my ($this) = @_;
+	return $this->{notNull}
+}
+
 # actions
 # -----------------------------------------------------------------------------
-sub _extractColumnConstraints {
-	my ($this,$constraints) = @_;
-}
+
 
 
 =begin
