@@ -2,13 +2,14 @@ package SqlArgument;
 
 use strict;
 use SqlObject;
+use Data::Dumper;
 
 our @ISA = qw(SqlObject);
 
 sub new {
 	my ($class,$owner,$name,$type) = @_;
 	my $this = $class->SUPER::new($owner,$name);
-   	$this->{type} = $type;
+   	$this->{dataType} = $type;
  	bless($this,$class);      
  	return $this;            
 }
@@ -20,7 +21,7 @@ sub getObjectType {
 
 sub printString {
 	my ($this) = @_;
-	return $this->getObjectType() . ' : ' . $this->{name} . ' = ' . $this->{type};
+	return $this->getObjectType() . ' : ' . $this->{name} . ' = ' . $this->getDataTypeName();
 }
 
 sub isSqlArgument {
@@ -28,9 +29,9 @@ sub isSqlArgument {
 	return 1;
 }
 
-sub getType {
+sub getDataType {
 	my ($this) = @_;
-	return $this->{type};
+	return $this->{dataType};
 }
 
 1;

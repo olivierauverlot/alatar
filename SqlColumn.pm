@@ -12,6 +12,8 @@ sub new {
 	$this->{pk} = 0;
 	$this->{fk} = 0;
 	$this->{notNull} = 0;
+	$this->{invokedFunctions} = [ ];
+   	$this->{callers} = [ ];
  	bless($this,$class);   
  	return $this;            
 }

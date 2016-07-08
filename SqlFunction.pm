@@ -71,6 +71,11 @@ sub getReturnType {
 	return $this->{returnType};
 }
 
+sub getReturnTypeName {
+	my ($this) = @_;
+	return $this->{returnType}->getName();
+}
+
 sub setReturnType {
 	my ($this,$returnType) = @_;
 	$this->{returnType} = $returnType;

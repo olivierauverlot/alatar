@@ -57,17 +57,6 @@ sub loadSQLSchema {
 	return $data;
 }
 
-sub cleanSchema {
-	my ($data) = @_;
-	# remove comments with --
-	$data =~ s/--//g;
-	# replace newlines and tabulations with a blank character
-	$data =~ s/[\t\n\r]+/ /g;
-	# remove comments with /* .. */
-	$data =~ s/\/\*.*?\*\///g;
-	return $data;
-}
-
 sub saveRequest {
 	my ($destFile,$request) = @_;
 	open(FD,'>',$destFile) or die("The SQL request can't be exported");
@@ -142,7 +131,7 @@ sub run {
 	
 	$schema = loadSQLSchema(Configuration->getOption('schemaPath'));
 
-	$model = SqlDatabase->new(Configuration->getOption('schemaPath'),cleanSchema($schema));
+	$model = SqlDatabase->new(Configuration->getOption('schemaPath'),$schema);
 
 	if(Configuration->getOption('requestsPath')) {
 		rmtree(Configuration->getOption('requestsPath'));

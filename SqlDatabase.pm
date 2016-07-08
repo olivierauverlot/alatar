@@ -23,6 +23,7 @@ sub new {
 	};
  	bless($this,$class); 
  	if(defined($schema)) {
+ 		$this->{schema} = $this->_clean($schema);
 	 	$this->{resolver} = SqlResolver->new($this);
 	 	$this->_extractDatabaseSetup();
 	 	$this->_extractTables();
@@ -68,11 +69,6 @@ sub addObject {
 	return $sqlObject;
 }
 
-sub addObjects {
-	my ($this,$sqlObjects) = @_;
-	return $this->addObject($sqlObjects);
-}
-
 sub getObjectsWithName {
 	my ($this,$name,@objects) = @_;
 	return (grep { $_->getName() eq $name} @objects);
@@ -84,6 +80,28 @@ sub getObjects {
 }
 
 sub getSqlTables {
+	my ($this) = @_;
+	my @tables;
+	foreach my $obj ($this->getObjects()) {
+	 	if($obj->isSqlTable() && !$obj->isSqlView()) {
+	 		push(@tables,$obj);
+	 	}
+	}
+	return @tables;
+}
+
+sub getSqlViews {
+	my ($this) = @_;
+	my @views;
+	foreach my $obj ($this->getObjects()) {
+	 	if($obj->isSqlTable() && $obj->isSqlView()) {
+	 		push(@views,$obj);
+	 	}
+	}
+	return @views;
+}
+
+sub getAllTables {
 	my ($this) = @_;
 	my @tables;
 	foreach my $obj ($this->getObjects()) {
@@ -162,6 +180,18 @@ sub getSequences {
 
 # Actions
 # -------------------------------------------------------------
+sub _clean {
+	my ($this,
+	$data) = @_;
+	# remove comments with --
+	$data =~ s/--//g;
+	# replace newlines and tabulations with a blank character
+	$data =~ s/[\t\n\r]+/ /g;
+	# remove comments with /* .. */
+	$data =~ s/\/\*.*?\*\///g;
+	return $data;
+}
+
 sub _extractDatabaseSetup {
 	my ($this) = @_;
 	# client encoding
@@ -169,7 +199,7 @@ sub _extractDatabaseSetup {
 	$this->{clientEncoding} = $items[0];
 	# List of extensions
 	@items = $this->{schema} =~ /CREATE\sEXTENSION\sIF\sNOT\sEXISTS\s(.*?)\sWITH\sSCHEMA\s(.*?)\;/gi;
-	for(my $i;$i < @items;$i=$i+2) {
+	for(my $i=0;$i < @items;$i=$i+2) {
 		# get the extension comment
 		my @comment = $this->{schema} =~ /COMMENT\sON\sEXTENSION\s$items[$i]\sIS\s\'(.*?)\'\;/gi;
 		if(!@comment) {
@@ -184,7 +214,7 @@ sub _extractTables {
 	my @tables = $this->{schema} =~ /CREATE\sTABLE\s(.*?);/gi;
 	foreach my $table (@tables) {
 		my $extractor = PgTableExtractor->new($this,$table);
-		$this->addObjects($extractor->getEntity());
+		$this->addObject($extractor->getEntity());
 	}
 }
 

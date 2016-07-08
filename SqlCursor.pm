@@ -70,7 +70,7 @@ sub _extractArguments {
 	my @params = $args =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->addArg(SqlArgument->new($this,$p[0],$p[1]));
+		$this->addArg(SqlArgument->new($this,$p[0],SqlDataType->new($this,$p[1])));
 	}
 }
 

@@ -2,7 +2,6 @@
 
 use strict;
 use Test::More 'no_plan';
-use LWP::Simple;
 use Data::Dumper;
 
 use SqlDatabase;
@@ -13,14 +12,14 @@ my $model = SqlDatabase->new('test',undef);
 my $extractor = PgTableExtractor->new($model,$sql);
 $model->addObject($extractor->getEntity());
 
-my @tables = $model->getTables();
-is( scalar(@tables), 1,  "Found a table in the database" );
+my @tables = $model->getSqlTables();
+is( scalar(@tables), 1,  "One table found" );
 
 my @tableSupport = $model->getObjectsWithName('support',@tables);
-is( $tableSupport[0]->getName(), 'support' ,  "Found the support table" );
+is( $tableSupport[0]->getName(), 'support' ,  "The table is named 'support'" );
 
 my @columns = $tableSupport[0]->getColumns();
-is( scalar(@columns), 20,  "Found 20 colums in support table" );
+is( scalar(@columns), 20,  "20 colums found" );
 
 
 # 8 tables sont NOT NULL

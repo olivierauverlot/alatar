@@ -62,7 +62,7 @@ sub _addFunctions {
  		$this->{xmlWriter}->startTag('function', 
  			'name' => $f->getName(),
  			'language' => $f->getLanguage(),
- 			'returnType' => $f->getReturnType(),
+ 			'returnType' => $f->getReturnTypeName(),
  			'comments' => ($f->isCommented() ? 'true' : 'false')
  		);
  		@args = $f->getArgs();
@@ -74,7 +74,7 @@ sub _addFunctions {
 	 			$this->{xmlWriter}->characters($a->getName());
 	 			$this->{xmlWriter}->endTag();
 	 			$this->{xmlWriter}->startTag('type');
-	 			$this->{xmlWriter}->characters($a->getType());
+	 			$this->{xmlWriter}->characters($a->getDataType()->getName());
 	 			$this->{xmlWriter}->endTag();
 	 			$this->{xmlWriter}->endTag();
 	 		}
@@ -119,7 +119,7 @@ sub _addFunctions {
 				 			$this->{xmlWriter}->characters($a->getName());
 				 			$this->{xmlWriter}->endTag();
 				 			$this->{xmlWriter}->startTag('type');
-				 			$this->{xmlWriter}->characters($a->getType());
+				 			$this->{xmlWriter}->characters($a->getDataType()->getName());
 				 			$this->{xmlWriter}->endTag();
 				 			$this->{xmlWriter}->endTag();
 						}
@@ -208,7 +208,7 @@ sub _addTables {
 		foreach my $c ($t->getColumns()) {
 			$this->{xmlWriter}->startTag('column',
 				'name' => $c->getName(),
-				'dataType' => $c->getDataType(),
+				'dataType' => $c->getDataType()->getName(),
 				'notNull' => ($c->isNotNull() ? 'true' : 'false'),
 				'primaryKey' => ($c->isPk() ? 'true' : 'false'),
 				'foreignKey' => ($c->isFk() ? 'true' : 'false')

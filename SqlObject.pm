@@ -2,14 +2,15 @@ package SqlObject;
 
 use strict;
 use Attribute::Abstract;
+use String::Util qw(trim);
 
 sub new {
 	my ($class,$owner,$name) = @_;
 	my $this = {
-		owner => $owner,
-		name => $name
+		owner => $owner
 	};
  	bless($this,$class);      
+	$this->setName($name);
  	return $this;            
 }
 
@@ -32,7 +33,12 @@ sub getName {
 
 sub setName {
 	my ($this,$name) = @_;
-	$this->{name} = $name;
+	$this->{name} = trim($name);
+}
+
+sub isSqlDataType {
+	my ($this) = @_;
+	return 0;
 }
 
 sub isSqlTable {
@@ -76,6 +82,11 @@ sub isSqlCursor {
 }
 
 sub isSqlColumn {
+	my ($this) = @_;
+	return 0;
+}
+
+sub isSqlConstraint {
 	my ($this) = @_;
 	return 0;
 }

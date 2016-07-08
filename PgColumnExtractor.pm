@@ -1,9 +1,11 @@
 package PgColumnExtractor;
 
 use strict;
-use String::Util qw(trim);
 use Data::Dumper;
+use String::Util qw(trim);
+
 use SqlColumn;
+use SqlDataType;
 
 our @ISA = qw(PgExtractor);
 
@@ -33,7 +35,7 @@ sub _extractObject {
 	
 		my @items = $code =~ /(.*?)\s(.*?)$/gi;
 		$this->{entity}->setName($items[0]);
-		$this->{entity}->setDataType(trim($items[1]));
+		$this->{entity}->setDataType(SqlDataType->new($this->{entity},$items[1]));
 	}
 }
 
