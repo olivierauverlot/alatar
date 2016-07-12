@@ -14,7 +14,11 @@ sub new {
  	return $this;            
 }
 
-sub printString: Abstract;
+# sub printString: Abstract;
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType();
+}
 
 sub getObjectType {
 	my ($this) = @_;

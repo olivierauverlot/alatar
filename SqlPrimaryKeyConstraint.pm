@@ -12,6 +12,11 @@ sub new {
  	return $this;            
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlPrimaryKeyConstraint';
+}
+
 sub isSqlPrimaryKeyConstraint {
 	my ($this) = @_;
 	return 1;

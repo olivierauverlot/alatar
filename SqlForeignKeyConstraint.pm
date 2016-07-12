@@ -13,6 +13,11 @@ sub new {
  	return $this;            
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlDefaultConstraint';
+}
+
 sub isSqlForeignKeyConstraint {
 	my ($this) = @_;
 	return 1;

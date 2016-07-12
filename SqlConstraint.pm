@@ -1,6 +1,7 @@
 package SqlConstraint;
 
 use strict;
+use Attribute::Abstract;
 use SqlObject;
 
 our @ISA = qw(SqlObject);
@@ -11,6 +12,11 @@ sub new {
 	$this->{columns} = [ ];
  	bless($this,$class);
  	return $this;            
+}
+
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlConstraint';
 }
 
 sub isSqlConstraint {
@@ -52,9 +58,9 @@ sub addColumn {
 
 sub getColumn {
 	my ($this) = @_;
-	if(scalar($this->{columns} == 1 ) {
+	if(scalar($this->{columns}) == 1 ) {
 		return $this->{columns}[0];
-	else { return undef }
+	} else { return undef }
 }
 
 sub getColumns {
@@ -62,4 +68,18 @@ sub getColumns {
 	return @{$this->{columns}};
 }
 
+sub getName {
+	my ($this) = @_;
+	return $this->getName();
+}
+
+# visitors
+sub acceptVisitor: Abstract;
+
+# actions
+# Return a formated name for cursors and request
+sub buildName {
+	my ($this,$name) = @_;
+	return ($this->getObjectType() . '_' . $name);
+}
 1;

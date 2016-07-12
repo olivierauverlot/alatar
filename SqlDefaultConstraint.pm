@@ -12,6 +12,11 @@ sub new {
  	return $this;            
 }
 
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlDefaultConstraint';
+}
+
 sub isSqlDefaultConstraint {
 	my ($this) = @_;
 	return 1;

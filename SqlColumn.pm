@@ -9,13 +9,13 @@ sub new {
 	my ($class,$owner,$name,$dataType) = @_;
 	my $this = $class->SUPER::new($owner,$name);
 	$this->{dataType} = $dataType;
+	$this->{_notNull} = 0;
 	$this->{pk} = 0;
 	$this->{fk} = 0;
-	$this->{notNull} = 0;
 	$this->{invokedFunctions} = [ ];
    	$this->{callers} = [ ];
  	bless($this,$class);   
- 	return $this;            
+ 	return $this;             
 }
 
 sub isSqlColumn {
@@ -56,15 +56,23 @@ sub isFk {
 	return $this->{fk};
 }
 
-sub setNotNull {
-	my ($this) = @_;
-	$this->{notNull} = 1;
+sub visitSqlNotNullConstraint {
+	my ($this,$constraint) = @_;
+	if($constraint->getOwner() == $this) {
+		$this->{_notNull} = 1;
+	}
 }
 
 sub isNotNull {
 	my ($this) = @_;
-	return $this->{notNull}
+	$this->{_notNull} = 0;
+	foreach my $constraint ($this->getOwner()->getConstraints()) {
+		$constraint->acceptVisitor($this);
+	}
+	return $this->{_notNull};
 }
+
+
 
 # actions
 # -----------------------------------------------------------------------------

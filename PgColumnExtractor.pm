@@ -7,6 +7,8 @@ use String::Util qw(trim);
 use SqlColumn;
 use SqlDataType;
 
+use SqlNotNullConstraint;
+
 our @ISA = qw(PgExtractor);
 
 sub new {
@@ -29,13 +31,19 @@ sub _extractObject {
 		# the columns contains a NOT NULL constraint ?
 		my @notNullConstraint = $code =~ /NOT\sNULL/g;
 		if(@notNullConstraint) {
-			$this->{entity}->setNotNull();
+			#$this->{entity}->setNotNull(); # must be removed
+			$this->getOwner()->addConstraint(SqlNotNullConstraint->new($this->{entity},undef));
 			$code =~ s/NOT\sNULL//g;
 		}
 	
 		my @items = $code =~ /(.*?)\s(.*?)$/gi;
 		$this->{entity}->setName($items[0]);
 		$this->{entity}->setDataType(SqlDataType->new($this->{entity},$items[1]));
+		
+		# we must fix constraints names
+		foreach my $constraint ($this->getOwner()->getConstraints()) {
+			$constraint->setName($constraint->buildName($items[0]))
+		}
 	}
 }
 

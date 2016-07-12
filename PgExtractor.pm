@@ -30,6 +30,11 @@ sub getEntity {
 	return $this->{entity};
 }
 
+sub getOwner {
+	my($this) = @_;
+	return $this->{owner};
+}
+
 # actions
 # --------------------------------------------------
 sub _extractObject: Abstract;

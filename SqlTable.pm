@@ -11,6 +11,7 @@ sub new {
 	my $this = $class->SUPER::new($owner,$name);
 	$this->{view} = 0;
 	$this->{columns} = [ ];
+	$this->{constraints} = [ ];
 	$this->{invokedFunctions} = [ ];
    	$this->{callers} = [ ];
  	bless($this,$class);
@@ -46,6 +47,17 @@ sub addColumn {
 sub getColumns {
 	my ($this) = @_;
 	return @{$this->{columns}};
+}
+
+sub addConstraint {
+	my ($this,$constraint) = @_;
+	push(@{$this->{constraints}},$constraint);
+	return $constraint;
+}
+
+sub getConstraints {
+	my ($this) = @_;
+	return @{$this->{constraints}};
 }
 
 sub getColumnWithName {
