@@ -31,7 +31,6 @@ sub _extractObject {
 		# the columns contains a NOT NULL constraint ?
 		my @notNullConstraint = $code =~ /NOT\sNULL/g;
 		if(@notNullConstraint) {
-			#$this->{entity}->setNotNull(); # must be removed
 			$this->getOwner()->addConstraint(SqlNotNullConstraint->new($this->{entity},undef));
 			$code =~ s/NOT\sNULL//g;
 		}
@@ -40,9 +39,11 @@ sub _extractObject {
 		$this->{entity}->setName($items[0]);
 		$this->{entity}->setDataType(SqlDataType->new($this->{entity},$items[1]));
 		
-		# we must fix constraints names
+		# we must fix constraints names for unamed constraints
 		foreach my $constraint ($this->getOwner()->getConstraints()) {
-			$constraint->setName($constraint->buildName($items[0]))
+			if(!defined($constraint->getName())) {
+				$constraint->setName($constraint->buildName($items[0]));
+			}
 		}
 	}
 }

@@ -26,8 +26,9 @@ sub _extractObject {
 	my @items =  split(/,/, $code);
 	foreach my $item (@items) {
 		$columnExtractor = PgColumnExtractor->new($this->{entity},$item);
-		if(defined($columnExtractor->getEntity())) {
-			$this->{entity}->addColumn($columnExtractor->getEntity());
+		my $column = $columnExtractor->getEntity();
+		if(defined($column)) {
+			$this->{entity}->addColumn($column);
 		}
 	}
 }

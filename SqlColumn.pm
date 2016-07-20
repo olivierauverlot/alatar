@@ -10,8 +10,9 @@ sub new {
 	my $this = $class->SUPER::new($owner,$name);
 	$this->{dataType} = $dataType;
 	$this->{_notNull} = 0;
-	$this->{pk} = 0;
-	$this->{fk} = 0;
+	$this->{_pk} = 0;
+	$this->{_fk} = 0;
+	$this->{_unique} = 0;
 	$this->{invokedFunctions} = [ ];
    	$this->{callers} = [ ];
  	bless($this,$class);   
@@ -46,20 +47,18 @@ sub getDataType {
 	return $this->{dataType};
 }
 
-sub isPk {
-	my ($this) = @_;
-	return $this->{pk};
-}
-
-sub isFk {
-	my ($this) = @_;
-	return $this->{fk};
-}
-
 sub visitSqlNotNullConstraint {
 	my ($this,$constraint) = @_;
 	if($constraint->getOwner() == $this) {
 		$this->{_notNull} = 1;
+	}
+}
+
+sub visitSqlPrimaryKeyConstraint {
+	my ($this,$constraint) = @_;
+	print "+" . $constraint->getOwner() . '|';
+	if($constraint->getOwner() == $this) {
+		$this->{_pk} = 1;
 	}
 }
 
@@ -72,6 +71,19 @@ sub isNotNull {
 	return $this->{_notNull};
 }
 
+sub isPk {
+	my ($this) = @_;
+	$this->{_pk} = 0;
+	foreach my $constraint ($this->getOwner()->getConstraints()) {
+		$constraint->acceptVisitor($this);
+	}
+	return $this->{_pk};
+}
+
+sub isFk {
+	my ($this) = @_;
+	return $this->{_fk};
+}
 
 
 # actions

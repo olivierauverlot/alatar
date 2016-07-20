@@ -1,9 +1,11 @@
-package SqlResolver;
+package PgResolver;
 
 use Data::Dumper;
 
 use SqlFunction;
 use SqlFunctionInvocation;
+use SqlTable;
+use SqlColumn;
 use strict;
 
 sub new {
@@ -50,10 +52,27 @@ sub _resolveInvokedFunctionsByTriggers {
 	}
 }
 
+sub _resolveConstraints {
+	my ($this) = @_;
+	for my $table ($this->{owner}->getSqlTables) {
+		for my $constraint ($table->getConstraints()) {
+			# we resolve only if the constraint have no a reference to the owner
+			if(ref($constraint->getOwner()) eq '') {
+				foreach my $column ($table->getColumns()) {
+					if($column->getName() eq $constraint->getOwner()) {
+						$constraint->setOwner($column);
+					}
+				}
+			}
+		}
+	}
+}
+
 sub resolveAllLinks {
 	my ($this) = @_;
 	$this->_resolveInvokedFunctions();
 	$this->_resolveInvokedFunctionsByTriggers();
+	$this->_resolveConstraints();
 }
 
 1;

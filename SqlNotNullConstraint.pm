@@ -28,4 +28,5 @@ sub acceptVisitor {
 	my ($this,$visitor) = @_;
 	$visitor->visitSqlNotNullConstraint($this);
 }
+
 1;

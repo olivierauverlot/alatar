@@ -49,6 +49,11 @@ sub isSqlDefaultConstraint {
 	return 0;
 }
 
+sub isSqlUniqueConstraint {
+	my ($this) = @_;
+	return 0;
+}
+
 # Setters and getters
 sub addColumn {
 	my ($this,$column) = @_;
@@ -66,11 +71,6 @@ sub getColumn {
 sub getColumns {
 	my ($this) = @_;
 	return @{$this->{columns}};
-}
-
-sub getName {
-	my ($this) = @_;
-	return $this->getName();
 }
 
 # visitors

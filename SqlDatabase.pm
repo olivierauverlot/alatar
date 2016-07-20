@@ -6,10 +6,11 @@ use PgExtension;
 use PgFunctionExtractor;
 use PgTriggerExtractor;
 use SqlFunction;
-use SqlResolver;
+use PgResolver;
 use SqlSequence;
 use SqlTable;
 use SqlTrigger; 
+use SqlPrimaryKeyConstraint;
 
 sub new {
 	my ($class,$name,$schema) = @_;
@@ -24,7 +25,7 @@ sub new {
  	bless($this,$class); 
  	if(defined($schema)) {
  		$this->{schema} = $this->_clean($schema);
-	 	$this->{resolver} = SqlResolver->new($this);
+	 	$this->{resolver} = PgResolver->new($this);
 	 	$this->_extractDatabaseSetup();
 	 	$this->_extractTables();
 	 	$this->_extractSequences();
@@ -211,10 +212,20 @@ sub _extractDatabaseSetup {
 
 sub _extractTables {
 	my ($this) = @_;
+	my ($table,$tableName);
 	my @tables = $this->{schema} =~ /CREATE\sTABLE\s(.*?);/gi;
 	foreach my $table (@tables) {
 		my $extractor = PgTableExtractor->new($this,$table);
-		$this->addObject($extractor->getEntity());
+		$table = $extractor->getEntity();
+		$this->addObject($table);
+		$tableName = $table->getName();
+		
+		# extract PK constraint if exists
+		my @pkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sPRIMARY\sKEY\s\((.*?)\);/gi;
+		if(scalar(@pkConstraint) == 2) {
+			# we have only the column name. It will be resolved later by the PgResolver
+			$table->addConstraint(SqlPrimaryKeyConstraint->new($pkConstraint[1],$pkConstraint[0]));
+		}
 	}
 }
 

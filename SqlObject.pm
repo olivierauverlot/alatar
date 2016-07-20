@@ -30,6 +30,11 @@ sub getOwner {
 	return $this->{owner};
 }
 
+sub setOwner {
+	my ($this,$owner) = @_;
+	$this->{owner} = $owner;
+}
+
 sub getName {
 	my ($this) = @_;
 	return $this->{name};

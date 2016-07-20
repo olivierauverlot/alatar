@@ -55,7 +55,7 @@ sub _addExtensions {
 sub _addFunctions {
 	my ($this) = @_;
 	my (@args,@requests,@cursors,@invokedMethods,@callers,@row);
-	my $parseFilePath = Configuration->getOption('appFolder') . '/bin/parse_file';
+	my $parseFilePath = '"' . Configuration->getOption('appFolder') . '/bin/parse_file' . '"';
 	
  	$this->{xmlWriter}->startTag('functions');
  	foreach my $f ($this->{model}->getSqlFunctions()) { 

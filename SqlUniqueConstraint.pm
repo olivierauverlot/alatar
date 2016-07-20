@@ -1,4 +1,4 @@
-package SqlPrimaryKeyConstraint;
+package SqlUniqueConstraint;
 
 use strict;
 use SqlObject;
@@ -14,18 +14,12 @@ sub new {
 
 sub getObjectType {
 	my ($this) = @_;
-	return 'SqlPrimaryKeyConstraint';
+	return 'SqlUniqueConstraint';
 }
 
-sub isSqlPrimaryKeyConstraint {
+sub isSqlDefaultConstraint {
 	my ($this) = @_;
 	return 1;
-}
-
-# visitor
-sub acceptVisitor {
-	my ($this,$visitor) = @_;
-	$visitor->visitSqlPrimaryKeyConstraint($this);
 }
 
 1;
