@@ -23,10 +23,4 @@ sub isSqlNotNullConstraint {
 	return 1;
 }
 
-# visitor
-sub acceptVisitor {
-	my ($this,$visitor) = @_;
-	$visitor->visitSqlNotNullConstraint($this);
-}
-
 1;

@@ -56,6 +56,31 @@ sub _resolveConstraints {
 	my ($this) = @_;
 	for my $table ($this->{owner}->getSqlTables) {
 		for my $constraint ($table->getConstraints()) {
+			# we resolve only if the constraint's columns have no a reference to the owner
+			my @columnReferences;
+			foreach my $constraintColumn ($constraint->getColumns()) {
+				if(ref($constraintColumn) eq '') {
+					# we must resolve the reference to the owner column
+					foreach my $tableColumn ($table->getColumns()) {
+						if($tableColumn->getName() eq $constraintColumn) {
+							push (@columnReferences,$tableColumn);
+						}
+					}					
+				} else {
+					# the reference is ok
+					push (@columnReferences,$constraintColumn);
+				}
+			}
+			$constraint->setColumns(@columnReferences);
+		}
+	}
+}
+
+=pod
+sub _resolveConstraints {
+	my ($this) = @_;
+	for my $table ($this->{owner}->getSqlTables) {
+		for my $constraint ($table->getConstraints()) {
 			# we resolve only if the constraint have no a reference to the owner
 			if(ref($constraint->getOwner()) eq '') {
 				foreach my $column ($table->getColumns()) {
@@ -66,7 +91,9 @@ sub _resolveConstraints {
 			}
 		}
 	}
+	print "FIN";
 }
+=cut
 
 sub resolveAllLinks {
 	my ($this) = @_;

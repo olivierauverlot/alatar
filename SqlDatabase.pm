@@ -2,6 +2,7 @@ package SqlDatabase;
 
 use Data::Dumper;
 use strict;
+use String::Util qw(trim);
 use PgExtension;
 use PgFunctionExtractor;
 use PgTriggerExtractor;
@@ -11,6 +12,7 @@ use SqlSequence;
 use SqlTable;
 use SqlTrigger; 
 use SqlPrimaryKeyConstraint;
+use SqlForeignKeyConstraint;
 
 sub new {
 	my ($class,$name,$schema) = @_;
@@ -223,8 +225,25 @@ sub _extractTables {
 		# extract PK constraint if exists
 		my @pkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sPRIMARY\sKEY\s\((.*?)\);/gi;
 		if(scalar(@pkConstraint) == 2) {
-			# we have only the column name. It will be resolved later by the PgResolver
-			$table->addConstraint(SqlPrimaryKeyConstraint->new($pkConstraint[1],$pkConstraint[0]));
+			my $constraint = SqlPrimaryKeyConstraint->new($table,$pkConstraint[0]);
+			# list of columns
+			foreach my $columnName (split(/,/ , $pkConstraint[1])) {
+				$constraint->addColumn(trim($columnName));
+			}
+			# we have only the column(s) name(s). It will be resolved later by the PgResolver
+			$table->addConstraint($constraint);
+		}
+		
+		# extract FK constraint if exist
+		# nom_contrainte,colonneFK, table_pointée,colonne pointée
+		my @fkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sFOREIGN\sKEY\s\((.*?)\)\sREFERENCES\s(.*?)\((.*?)\).*?;/;
+
+		if(scalar(@fkConstraint) == 4) {
+			my $constraint = SqlForeignKeyConstraint->new($table,$fkConstraint[0]);
+			# Problème ici car on doit ajouter une référence vers une
+			# colonne qui se trouve dans une autre table
+			# $constraint->addColumn();
+			# $table->addConstraint($constraint);
 		}
 	}
 }

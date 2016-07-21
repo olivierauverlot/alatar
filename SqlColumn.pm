@@ -1,5 +1,7 @@
 package SqlColumn;
 
+use Data::Dumper;
+
 use strict;
 use SqlObject;
 
@@ -9,8 +11,6 @@ sub new {
 	my ($class,$owner,$name,$dataType) = @_;
 	my $this = $class->SUPER::new($owner,$name);
 	$this->{dataType} = $dataType;
-	$this->{_notNull} = 0;
-	$this->{_pk} = 0;
 	$this->{_fk} = 0;
 	$this->{_unique} = 0;
 	$this->{invokedFunctions} = [ ];
@@ -47,37 +47,20 @@ sub getDataType {
 	return $this->{dataType};
 }
 
-sub visitSqlNotNullConstraint {
-	my ($this,$constraint) = @_;
-	if($constraint->getOwner() == $this) {
-		$this->{_notNull} = 1;
-	}
-}
-
-sub visitSqlPrimaryKeyConstraint {
-	my ($this,$constraint) = @_;
-	print "+" . $constraint->getOwner() . '|';
-	if($constraint->getOwner() == $this) {
-		$this->{_pk} = 1;
-	}
-}
-
 sub isNotNull {
 	my ($this) = @_;
-	$this->{_notNull} = 0;
-	foreach my $constraint ($this->getOwner()->getConstraints()) {
-		$constraint->acceptVisitor($this);
-	}
-	return $this->{_notNull};
+
+	return grep { 
+		$_->isSqlNotNullConstraint() && grep { $_ == $this } $_->getColumns() 
+	} $this->getOwner()->getConstraints();
 }
 
 sub isPk {
 	my ($this) = @_;
-	$this->{_pk} = 0;
-	foreach my $constraint ($this->getOwner()->getConstraints()) {
-		$constraint->acceptVisitor($this);
-	}
-	return $this->{_pk};
+
+	return grep { 
+		$_->isSqlPrimaryKeyConstraint() && grep { $_ == $this } $_->getColumns()
+	} $this->getOwner()->getConstraints();
 }
 
 sub isFk {

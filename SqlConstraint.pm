@@ -73,8 +73,13 @@ sub getColumns {
 	return @{$this->{columns}};
 }
 
+sub setColumns {
+	my ($this,@columns) = @_;
+	$this->{columns} = \@columns;
+}
+
 # visitors
-sub acceptVisitor: Abstract;
+# sub acceptVisitor: Abstract;
 
 # actions
 # Return a formated name for cursors and request
@@ -82,4 +87,6 @@ sub buildName {
 	my ($this,$name) = @_;
 	return ($this->getObjectType() . '_' . $name);
 }
+
+
 1;

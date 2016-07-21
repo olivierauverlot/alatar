@@ -31,6 +31,25 @@ sub _extractObject {
 			$this->{entity}->addColumn($column);
 		}
 	}
+
+	# we must fix constraints names for unamed constraints
+	foreach my $constraint ($this->{entity}->getConstraints()) {
+		if(!defined($constraint->getName())) {
+			$constraint->setName($constraint->buildName($this->{entity}->getName()));
+		}
+	}
+
+	# Listing pour debuggage
+=pod
+	print "TABLE " . $this->{entity}->getName() . "\n;"
+	foreach my $constraint ($this->{entity}->getConstraints()) {
+		if($constraint->isSqlNotNullConstraint()) {
+			foreach my $c ($constraint->getColumns()) {
+				print $c->getName() . "\n";
+			}
+		}
+	}	
+=cut
 }
 
 1;

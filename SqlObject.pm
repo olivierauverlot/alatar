@@ -100,4 +100,9 @@ sub isSqlConstraint {
 	return 0;
 }
 
+sub isSqlColumnReference {
+	my ($this) = @_;
+	return 1;
+}
+
 1;

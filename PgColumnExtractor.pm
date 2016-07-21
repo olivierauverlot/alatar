@@ -27,24 +27,29 @@ sub _extractObject {
 
 	# we ensure that the code is a real column and not a constraint
 	unless($code =~ /CONSTRAINT/g) {
+		
+		my $notNull = undef;
 		$this->{entity} = SqlColumn->new($this->{owner},undef,undef);
+		
 		# the columns contains a NOT NULL constraint ?
 		my @notNullConstraint = $code =~ /NOT\sNULL/g;
+
 		if(@notNullConstraint) {
-			$this->getOwner()->addConstraint(SqlNotNullConstraint->new($this->{entity},undef));
+			$notNull = SqlNotNullConstraint->new($this->getOwner(),undef);
 			$code =~ s/NOT\sNULL//g;
 		}
 	
 		my @items = $code =~ /(.*?)\s(.*?)$/gi;
 		$this->{entity}->setName($items[0]);
 		$this->{entity}->setDataType(SqlDataType->new($this->{entity},$items[1]));
-		
-		# we must fix constraints names for unamed constraints
-		foreach my $constraint ($this->getOwner()->getConstraints()) {
-			if(!defined($constraint->getName())) {
-				$constraint->setName($constraint->buildName($items[0]));
-			}
+	
+		if(defined($notNull)) {
+			my $db = $this->getOwner()->getOwner();
+			my $columnReference = SqlColumnReference->new($db,undef,$this->getOwner(),$this->{entity});
+			$notNull->addColumn($this->{entity});
+			$this->getOwner()->addConstraint($notNull);
 		}
+		
 	}
 }
 
