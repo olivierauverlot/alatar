@@ -65,7 +65,10 @@ sub isPk {
 
 sub isFk {
 	my ($this) = @_;
-	return $this->{_fk};
+
+	return grep {
+		$_->isSqlForeignKeyConstraint() && grep { $_ == $this } $_->getOneColumn()
+	} $this->getOwner()->getConstraints();
 }
 
 

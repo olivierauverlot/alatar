@@ -2,6 +2,7 @@ package SqlForeignKeyConstraint;
 
 use strict;
 use SqlObject;
+use Data::Dumper;
 
 our @ISA = qw(SqlConstraint);
 
@@ -15,7 +16,14 @@ sub new {
 
 sub getObjectType {
 	my ($this) = @_;
-	return 'SqlDefaultConstraint';
+	return 'SqlForeignKeyConstraint';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name} . ' ' 
+		. $this->getOneColumn()->getOwnerName() . '(' .  $this->getOneColumn()->getName() . ') -> ' 
+		. $this->getReference()->getOwnerName() . '(' . $this->getReference()->getName . ')';
 }
 
 sub isSqlForeignKeyConstraint {

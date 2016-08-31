@@ -1,6 +1,7 @@
 package SqlConstraint;
 
 use strict;
+use Data::Dumper;
 use Attribute::Abstract;
 use SqlObject;
 
@@ -17,6 +18,11 @@ sub new {
 sub getObjectType {
 	my ($this) = @_;
 	return 'SqlConstraint';
+}
+
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' : ' . $this->{name};
 }
 
 sub isSqlConstraint {
@@ -61,11 +67,9 @@ sub addColumn {
 	return $column;
 }
 
-sub getColumn {
+sub getOneColumn {
 	my ($this) = @_;
-	if(scalar($this->{columns}) == 1 ) {
-		return $this->{columns}[0];
-	} else { return undef }
+	return $this->{columns}[0];
 }
 
 sub getColumns {

@@ -8,24 +8,36 @@ use SqlDatabase;
 use SqlTable;
 use SqlColumn;
 
-my ($extractor,$column);
+my $sql = <<'SCHEMA';
+CREATE TABLE t (
+    id integer,
+    name character varying(255),
+    category integer NOT NULL
+);
+SCHEMA
 
-my $model = SqlDatabase->new('test',undef);
-my $table = SqlTable->new($model,'table');
-$model->addObject($table);
+my $model = SqlDatabase->new('test',$sql);
 
-$extractor = PgColumnExtractor->new($table,'id integer');
-$column = $extractor->getEntity();
-is( $column->getName(),'id',"'id' column found");
-is( $column->getDataType()->getName(),'integer',"'integer' datatype found");
+my @tables = $model->getSqlTables();
+is (scalar(@tables),1,'One table found');
 
-$extractor = PgColumnExtractor->new($table,'name character varying(255)');
-$column = $extractor->getEntity();
-is( $column->getName(),'name',"'name' column found");
-is( $column->getDataType()->getName(),'character varying',"'character varying' datatype found");
+my @t = $model->getObjectsWithName('t',@tables);
+is( scalar(@t),1,"Table 't' found");
+my $table_t = $t[0];
 
-$extractor = PgColumnExtractor->new($table,'category integer NOT NULL');
-$column = $extractor->getEntity();
-is( $column->getName(),'category',"'category' column found");
-is( $column->getDataType()->getName(),'integer',"'integer' datatype found");
-is( $column->isNotNull(),1,'NOT NULL constraint found');
+my @columns = $table_t->getColumns();
+
+my $id = $table_t->getColumnWithName('id'); 
+my $name = $table_t->getColumnWithName('name'); 
+my $category = $table_t->getColumnWithName('category'); 
+
+isnt($id,undef,"'id' column found");
+is( $id->getDataType()->getName(),'integer',"'integer' datatype found");
+
+isnt($name,undef,"'name' column found");
+is( $name->getDataType()->getName(),'character varying',"'character varying' datatype found");
+
+isnt($category,undef,"'category' column found");
+is( $category->getDataType()->getName(),'integer',"'integer' datatype found");
+is( $category->isNotNull(),1,'NOT NULL constraint found');
+

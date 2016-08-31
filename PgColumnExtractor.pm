@@ -6,8 +6,8 @@ use String::Util qw(trim);
 
 use SqlColumn;
 use SqlDataType;
-
 use SqlNotNullConstraint;
+use SqlColumnReference;
 
 our @ISA = qw(PgExtractor);
 
@@ -46,10 +46,9 @@ sub _extractObject {
 		if(defined($notNull)) {
 			my $db = $this->getOwner()->getOwner();
 			my $columnReference = SqlColumnReference->new($db,undef,$this->getOwner(),$this->{entity});
-			$notNull->addColumn($this->{entity});
+			$notNull->addColumn($columnReference);
 			$this->getOwner()->addConstraint($notNull);
 		}
-		
 	}
 }
 

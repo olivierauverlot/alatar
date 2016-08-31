@@ -52,48 +52,57 @@ sub _resolveInvokedFunctionsByTriggers {
 	}
 }
 
+# resolve a column reference and returns an valid SqlColumn instance
+# recoit p et id
+sub _resolveColumnReference {
+	my ($this,$columnReference) = @_;	
+	
+	my ($tableRef,$columnRef);
+	
+	if(ref($columnReference->getColumn()) eq '') {
+		# the column reference is undefined
+		if(ref($columnReference->getTable()) eq '') {
+			# we must resolve the table reference
+			foreach my $table ($columnReference->getOwner()->getSqlTables()) {
+				if($table->getName() eq $columnReference->getTable()) {
+					$tableRef = $table;
+				}
+			}
+		} else {
+			$tableRef = $columnReference->getTable();
+		}
+		# and find the column reference
+		foreach my $column ($tableRef->getColumns()) {
+			if($column->getName() eq $columnReference->getColumn()) {
+				$columnRef = $column;
+			}
+		}				
+	} else {
+		$columnRef = $columnReference->getColumn();
+	}
+	return $columnRef;
+}
+
+# Resolve the column references in constraints
 sub _resolveConstraints {
 	my ($this) = @_;
 	for my $table ($this->{owner}->getSqlTables) {
 		for my $constraint ($table->getConstraints()) {
 			# we resolve only if the constraint's columns have no a reference to the owner
-			my @columnReferences;
+			my (@columns,$reference);		
 			foreach my $constraintColumn ($constraint->getColumns()) {
-				if(ref($constraintColumn) eq '') {
-					# we must resolve the reference to the owner column
-					foreach my $tableColumn ($table->getColumns()) {
-						if($tableColumn->getName() eq $constraintColumn) {
-							push (@columnReferences,$tableColumn);
-						}
-					}					
-				} else {
-					# the reference is ok
-					push (@columnReferences,$constraintColumn);
-				}
+				push(@columns,$this->_resolveColumnReference($constraintColumn));
 			}
-			$constraint->setColumns(@columnReferences);
-		}
-	}
-}
-
-=pod
-sub _resolveConstraints {
-	my ($this) = @_;
-	for my $table ($this->{owner}->getSqlTables) {
-		for my $constraint ($table->getConstraints()) {
-			# we resolve only if the constraint have no a reference to the owner
-			if(ref($constraint->getOwner()) eq '') {
-				foreach my $column ($table->getColumns()) {
-					if($column->getName() eq $constraint->getOwner()) {
-						$constraint->setOwner($column);
-					}
-				}
+			# replace the list of SqlColumnReference with a list of SqlColumn
+			$constraint->setColumns(@columns);
+			
+			# we resolve the reference in SqlColumnReference (SqlForeignKeyConstraint instances only)
+			if($constraint->isSqlForeignKeyConstraint()) {
+				$constraint->setReference($this->_resolveColumnReference($constraint->getReference()));
 			}
 		}
 	}
-	print "FIN";
 }
-=cut
 
 sub resolveAllLinks {
 	my ($this) = @_;

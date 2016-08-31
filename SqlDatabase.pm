@@ -10,7 +10,8 @@ use SqlFunction;
 use PgResolver;
 use SqlSequence;
 use SqlTable;
-use SqlTrigger; 
+use SqlTrigger;
+use SqlColumnReference;
 use SqlPrimaryKeyConstraint;
 use SqlForeignKeyConstraint;
 
@@ -228,7 +229,7 @@ sub _extractTables {
 			my $constraint = SqlPrimaryKeyConstraint->new($table,$pkConstraint[0]);
 			# list of columns
 			foreach my $columnName (split(/,/ , $pkConstraint[1])) {
-				$constraint->addColumn(trim($columnName));
+				$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($columnName)));
 			}
 			# we have only the column(s) name(s). It will be resolved later by the PgResolver
 			$table->addConstraint($constraint);
@@ -239,11 +240,15 @@ sub _extractTables {
 		my @fkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sFOREIGN\sKEY\s\((.*?)\)\sREFERENCES\s(.*?)\((.*?)\).*?;/;
 
 		if(scalar(@fkConstraint) == 4) {
+			# Define the source column
 			my $constraint = SqlForeignKeyConstraint->new($table,$fkConstraint[0]);
-			# Problème ici car on doit ajouter une référence vers une
-			# colonne qui se trouve dans une autre table
-			# $constraint->addColumn();
-			# $table->addConstraint($constraint);
+			$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($fkConstraint[1])));
+			
+			# define the target column
+			$constraint->setReference(SqlColumnReference->new($this,undef,trim($fkConstraint[2]),trim($fkConstraint[3])));
+			
+			# the constraint is added to the table definition
+			$table->addConstraint($constraint);
 		}
 	}
 }
