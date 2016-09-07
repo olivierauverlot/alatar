@@ -14,6 +14,7 @@ use SqlTrigger;
 use SqlColumnReference;
 use SqlPrimaryKeyConstraint;
 use SqlForeignKeyConstraint;
+use SqlUniqueConstraint;
 
 sub new {
 	my ($class,$name,$schema) = @_;
@@ -235,12 +236,12 @@ sub _extractTables {
 			$table->addConstraint($constraint);
 		}
 		
-		# extract FK constraint if exist
+		# extract FK constraint if exists
 		# nom_contrainte,colonneFK, table_pointée,colonne pointée
 		my @fkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sFOREIGN\sKEY\s\((.*?)\)\sREFERENCES\s(.*?)\((.*?)\).*?;/;
 
 		if(scalar(@fkConstraint) == 4) {
-			# Define the source column
+			# Define the source column 
 			my $constraint = SqlForeignKeyConstraint->new($table,$fkConstraint[0]);
 			$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($fkConstraint[1])));
 			
@@ -250,6 +251,20 @@ sub _extractTables {
 			# the constraint is added to the table definition
 			$table->addConstraint($constraint);
 		}
+		
+		# extract UNIQUE constraint if exists
+		# ALTER TABLE ONLY t ADD CONSTRAINT t_unique UNIQUE (name, category);
+		# nom_contrainte,liste_colonnes
+		# my @uniqueConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g;
+		while ($this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g) {
+        	my $constraint = SqlUniqueConstraint->new($table,$1);
+			# list of columns
+			foreach my $columnName (split(/,/ , $2)) {
+				$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($columnName)));
+			}
+			# we have only the column(s) name(s). It will be resolved later by the PgResolver
+			$table->addConstraint($constraint);
+    	}
 	}
 }
 

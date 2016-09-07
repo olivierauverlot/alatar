@@ -51,7 +51,15 @@ sub isNotNull {
 	my ($this) = @_;
 
 	return grep { 
-		$_->isSqlNotNullConstraint() && grep { $_ == $this } $_->getColumns() 
+		$_->isSqlNotNullConstraint() && grep { $_ == $this } $_->getColumns()  
+	} $this->getOwner()->getConstraints();
+}
+
+sub isUnique {
+	my ($this) = @_;
+
+	return grep { 
+		$_->isSqlUniqueConstraint() && grep { $_ == $this } $_->getColumns()
 	} $this->getOwner()->getConstraints();
 }
 

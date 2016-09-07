@@ -12,8 +12,13 @@ my $sql = <<'SCHEMA';
 CREATE TABLE t (
     id integer,
     name character varying(255),
-    category integer NOT NULL
+    category integer NOT NULL,
+    foo integer
 );
+
+ALTER TABLE ONLY t ADD CONSTRAINT t_unique UNIQUE (name, category);
+    
+ALTER TABLE ONLY t ADD CONSTRAINT foo_unique UNIQUE (foo);
 SCHEMA
 
 my $model = SqlDatabase->new('test',$sql);
@@ -30,6 +35,7 @@ my @columns = $table_t->getColumns();
 my $id = $table_t->getColumnWithName('id'); 
 my $name = $table_t->getColumnWithName('name'); 
 my $category = $table_t->getColumnWithName('category'); 
+my $foo = $table_t->getColumnWithName('foo');
 
 isnt($id,undef,"'id' column found");
 is( $id->getDataType()->getName(),'integer',"'integer' datatype found");
@@ -40,4 +46,9 @@ is( $name->getDataType()->getName(),'character varying',"'character varying' dat
 isnt($category,undef,"'category' column found");
 is( $category->getDataType()->getName(),'integer',"'integer' datatype found");
 is( $category->isNotNull(),1,'NOT NULL constraint found');
+
+is ( $id->isUnique(),0,"'id' column is not unique");
+is ( $name->isUnique(),1,"'name' column is unique");
+is ( $category->isUnique(),1,"'category' column is unique");
+is ( $foo->isUnique(),1,"'foo' column is unique");
 

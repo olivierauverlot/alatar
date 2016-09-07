@@ -112,11 +112,10 @@ sub createCompactSchema {
 	my ($destPath,$schema) = @_;
 	my $fd;
 	my @items;
-	
 	open($fd,'>',$destPath) || die "Cannot create the compact schema";
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+TABLE\s.*?\);)/gs);
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+VIEW.*?;)/gs);
-	addToCompactSchema($fd,$schema =~ /(CREATE\sFUNCTION\s.*?END;\$\$;)/gs);
+	addToCompactSchema($fd,$schema =~ /(CREATE\sFUNCTION\s.*?\$\$;)/gs);
 	addToCompactSchema($fd,$schema =~ /(CREATE\s+TRIGGER\s.*?;)/gs);
 	addToCompactSchema($fd,$schema =~ /(ALTER\sTABLE[^;]*FOREIGN\sKEY.*?;)/gs);
 	addToCompactSchema($fd,$schema =~ /(ALTER\sTABLE[^;]*PRIMARY\sKEY.*?;)/gs);

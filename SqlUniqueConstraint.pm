@@ -17,7 +17,7 @@ sub getObjectType {
 	return 'SqlUniqueConstraint';
 }
 
-sub isSqlDefaultConstraint {
+sub isSqlUniqueConstraint {
 	my ($this) = @_;
 	return 1;
 }
