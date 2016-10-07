@@ -28,7 +28,7 @@ use SqlFunction;
 
 use utf8;
 
-my $VERSION = '0.1';
+my $VERSION = '0.1 Build 20160908-1';
 
 my (@requestFiles,@cursorFiles);
 my (@userFunctionsList,%invokedFunctions);

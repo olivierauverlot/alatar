@@ -12,8 +12,8 @@ my $sql = <<'SCHEMA';
 CREATE TABLE t (
     id integer,
     name character varying(255),
-    category integer NOT NULL,
-    foo integer
+    category integer DEFAULT 0 NOT NULL,
+    foo integer DEFAULT func('arg')
 );
 
 ALTER TABLE ONLY t ADD CONSTRAINT t_unique UNIQUE (name, category);
@@ -51,4 +51,8 @@ is ( $id->isUnique(),0,"'id' column is not unique");
 is ( $name->isUnique(),1,"'name' column is unique");
 is ( $category->isUnique(),1,"'category' column is unique");
 is ( $foo->isUnique(),1,"'foo' column is unique");
+
+is ( $name->hasDefaultValue(),0,"'name' column has not a default valeur");
+is ( $category->hasDefaultValue(),1,"'category' column has a default valeur");
+is ( $foo->hasDefaultValue(),1,"'foo' column has a default valeur");
 

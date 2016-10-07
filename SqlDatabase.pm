@@ -186,8 +186,7 @@ sub getSequences {
 # Actions
 # -------------------------------------------------------------
 sub _clean {
-	my ($this,
-	$data) = @_;
+	my ($this,$data) = @_;
 	# remove comments with --
 	$data =~ s/--//g;
 	# replace newlines and tabulations with a blank character
@@ -278,7 +277,7 @@ sub _extractSequences {
 
 sub _extractFunctions {
 	my ($this) = @_;
-	my @functions = $this->{schema} =~ /CREATE FUNCTION\s(.*?)END;\$\$;/gi;
+	my @functions = $this->{schema} =~ /CREATE\sFUNCTION\s(.*?)END;\s*\$\$;/gi;
 	foreach my $fcode (@functions) {
 		my $extractor = PgFunctionExtractor->new($this,$fcode);
 		my $function = $extractor->getEntity();

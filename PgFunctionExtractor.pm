@@ -114,7 +114,6 @@ sub _extractObject {
 	
 	$this->{entity} = SqlFunction->new($this->{owner},$items[1]);
 	$this->{entity}->setSignature($items[0]);
-	
 	@items = $code =~ /RETURNS\s(\w+\s?\w*)/i;
 	if(@items) {
 		$this->{entity}->setReturnType(SqlDataType->new($this->{entity},$items[0])); 
@@ -147,7 +146,7 @@ sub _extractObject {
 	$this->_extractCursorDefinitions();
 	$this->_extractRequests();
 	$this->_extractInvokedFunctions($this->{entity}->getBodySection());
-
+	
 	if($this->{entity}->getReturnType() eq 'trigger') {
 		$this->_extractNewOldColumns($this->{entity}->getBodySection());
 	}

@@ -31,7 +31,7 @@ sub _extractObject {
 		my $notNull = undef;
 		$this->{entity} = SqlColumn->new($this->{owner},undef,undef);
 		
-		# the columns contains a NOT NULL constraint ?
+		# the column contains a NOT NULL constraint ?
 		my @notNullConstraint = $code =~ /NOT\sNULL/g;
 
 		if(@notNullConstraint) {
@@ -39,6 +39,15 @@ sub _extractObject {
 			$code =~ s/NOT\sNULL//g;
 		}
 	
+		# the column contains a DEFAULT constraint ?
+		# TODO
+		my @defaultConstraint = $code =~ /(DEFAULT\s(.*)?)/g;
+		if(@defaultConstraint) {
+			my $string =  quotemeta($defaultConstraint[0]);
+			$code =~s/$string//g;
+		}
+		
+		# read the column datatype
 		my @items = $code =~ /(.*?)\s(.*?)$/gi;
 		$this->{entity}->setName($items[0]);
 		$this->{entity}->setDataType(SqlDataType->new($this->{entity},$items[1]));

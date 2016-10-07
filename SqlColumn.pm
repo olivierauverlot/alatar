@@ -79,6 +79,12 @@ sub isFk {
 	} $this->getOwner()->getConstraints();
 }
 
+sub hasDefaultValue {
+	my ($this) = @_;
+	# MUST BE IMPLEMENTED
+	
+	return 0;
+}
 
 # actions
 # -----------------------------------------------------------------------------
