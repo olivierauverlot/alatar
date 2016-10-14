@@ -130,7 +130,7 @@ sub _addFunctions {
 		 			$this->{xmlWriter}->endTag();
 		 			if(Configuration->getOption('requestsPath')) {
 			 			$this->{xmlWriter}->startTag('json');
-			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->getName() . '.sql';
+			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
 			 			my $jsonData = qx { $parseFilePath "$dest"};
 						$this->{xmlWriter}->cdata($jsonData);
 			 			$this->{xmlWriter}->endTag();

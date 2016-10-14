@@ -16,7 +16,6 @@ use warnings;
 use Getopt::Long;
 use File::Path;
 use File::Basename;
-use File::Basename;
 use Data::Dumper;
 use XML::Writer;
 use IO::File;
@@ -28,7 +27,7 @@ use SqlFunction;
 
 use utf8;
 
-my $VERSION = '0.1 Build 20160908-1';
+my $VERSION = '0.1 Build 20161008-1';
 
 my (@requestFiles,@cursorFiles);
 my (@userFunctionsList,%invokedFunctions);
@@ -84,7 +83,7 @@ sub saveRequests {
 		saveRequest($dest,$r->getRequest());
 	}
 	foreach my $r ($model->getSqlCursorRequests()) {
-		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->getName() . '.sql';
+		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
 		push(@cursorFiles,$r->getName());
 		saveRequest($dest,$r->getRequest());
 	}
