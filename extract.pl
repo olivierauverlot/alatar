@@ -24,7 +24,6 @@ use PgXMLExporter;
 use SqlDatabase;
 use SqlFunction;
 
-
 use utf8;
 
 my $VERSION = '0.1 Build 20161008-1';
