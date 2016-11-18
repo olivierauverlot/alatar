@@ -10,7 +10,7 @@
 #    tax := subtotal * 0.06;
 #END;
 #$$ LANGUAGE plpgsql;
-
+ 
 use strict;
 use warnings;
 use Getopt::Long;

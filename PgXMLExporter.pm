@@ -22,6 +22,7 @@ sub new {
 	$this->_addExtensions();
 	$this->_addFunctions();
 	$this->_addTables();
+	$this->_addViews();
 	$this->_addTriggerDefinitions();
 	$this->_addSequences();
 	$this->{xmlWriter}->endTag();	# end of schema definition
@@ -219,6 +220,28 @@ sub _addTables {
 		$this->{xmlWriter}->endTag();
 	}
 	$this->{xmlWriter}->endTag();	# end of table definition
+}
+
+# --------------------------------------------------
+# Views definitions
+# --------------------------------------------------
+sub _addViews {
+	my ($this) = @_;
+	$this->{xmlWriter}->startTag('views');
+	foreach my $v ($this->{model}->getSqlViews()) {
+		$this->{xmlWriter}->startTag('view',
+			'name' => $v->getName()
+		);
+		$this->{xmlWriter}->startTag('request',
+			'name' => ($v->getSqlRequest()->getName())
+		);
+		$this->{xmlWriter}->startTag('sql');
+		$this->{xmlWriter}->cdata($v->getSqlRequest()->getRequest());
+		$this->{xmlWriter}->endTag(); # end of sql definition
+		$this->{xmlWriter}->endTag(); # end of request definition
+		$this->{xmlWriter}->endTag(); # end of view definition
+	}
+	$this->{xmlWriter}->endTag(); # end of views definition
 }
 
 # --------------------------------------------------

@@ -4,6 +4,7 @@ use Data::Dumper;
 use strict;
 use String::Util qw(trim);
 use PgExtension;
+use PgViewExtractor;
 use PgFunctionExtractor;
 use PgTriggerExtractor;
 use SqlFunction;
@@ -32,6 +33,7 @@ sub new {
 	 	$this->{resolver} = PgResolver->new($this);
 	 	$this->_extractDatabaseSetup();
 	 	$this->_extractTables();
+	 	$this->_extractViews();
 	 	$this->_extractSequences();
 	 	$this->_extractFunctions();
 	 	$this->_extractTriggers();
@@ -99,7 +101,7 @@ sub getSqlViews {
 	my ($this) = @_;
 	my @views;
 	foreach my $obj ($this->getObjects()) {
-	 	if($obj->isSqlTable() && $obj->isSqlView()) {
+	 	if($obj->isSqlView()) {
 	 		push(@views,$obj);
 	 	}
 	}
@@ -264,6 +266,15 @@ sub _extractTables {
 			# we have only the column(s) name(s). It will be resolved later by the PgResolver
 			$table->addConstraint($constraint);
     	}
+	}
+}
+
+sub _extractViews {
+	my ($this) = @_;
+	my @views = $this->{schema} =~ /CREATE\sVIEW\s(.*?);/gi;
+	foreach my $view (@views) {
+		my $extractor = PgViewExtractor->new($this,$view);
+		$this->addObject($extractor->getEntity());
 	}
 }
 

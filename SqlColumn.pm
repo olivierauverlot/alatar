@@ -21,7 +21,7 @@ sub new {
 
 sub isSqlColumn {
 	my ($this) = @_;
-	return 0;
+	return 1;
 }
 
 sub getObjectType {
