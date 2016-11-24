@@ -1,6 +1,8 @@
 package SqlRequest;
 
 use strict;
+use Data::Dumper;
+use SQL::Statement;
 use SqlObject;
 
 our @ISA = qw(SqlObject);
@@ -8,7 +10,11 @@ our @ISA = qw(SqlObject);
 sub new {
 	my ($class,$owner,$name,$request) = @_;
 	my $this = $class->SUPER::new($owner,$name);
-	$this->{request} = $request;
+	$this->{_request} = $request;
+	
+	# Enable this line to activate the SQL Parser
+	$this->parseSqlRequest();
+ 	
  	bless($this,$class);      
  	return $this;            
 }
@@ -28,9 +34,35 @@ sub printString {
 	return $this->getObjectType() . ' : ' . $this->{name};
 }
 
+# setters and getters
 sub getRequest {
 	my ($this) = @_;
-	return $this->{request};
+	return $this->{_request};
+}
+
+# action
+sub parseSqlRequest {
+	my ($this) = @_;
+	my $sqlParser = SQL::Parser->new();
+
+=pod
+	print "=START======================================================\n";
+	print $this->{request};
+	$sqlParser->parse($this->{_request});
+	
+	$sqlParser->{RaiseError}=0;
+    $sqlParser->{PrintError}=1;
+	my $stmt = SQL::Statement->new($this->{_request},$sqlParser);
+    printf "Command             %s\n",$stmt->command;
+    printf "Num of Placeholders %s\n",scalar $stmt->params;
+    printf "Columns             %s\n",join( ',', map {$_->name} $stmt->column_defs() );
+    printf "Tables              %s\n",join( ',', map {$_->name} $stmt->tables() );
+    printf "Where operator      %s\n",join( ',', $stmt->where->op() );
+    printf "Limit               %s\n",$stmt->limit();
+    printf "Offset              %s\n",$stmt->offset();
+	print Dumper $sqlParser->structure;
+	print "=END=======================================================\n";
+=cut
 }
 
 1;

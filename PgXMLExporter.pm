@@ -254,13 +254,19 @@ sub _addTriggerDefinitions {
  	foreach my $t ($this->{model}->getSqlTriggers()) { 
  		$this->{xmlWriter}->startTag('trigger', 
  			'name' => $t->getName(),
- 			'event' => $t->getEvent(),
  			'fire' => $t->getFire(),
  			'level' => $t->getLevel()
  		);
  		$this->{xmlWriter}->startTag('table');
 	 	$this->{xmlWriter}->characters($t->getTable());
 	 	$this->{xmlWriter}->endTag();
+	 	$this->{xmlWriter}->startTag('events');
+	 	foreach my $event (@{$t->getEvents()}) {
+	 		$this->{xmlWriter}->startTag('event');
+	 		$this->{xmlWriter}->characters($event);
+	 		$this->{xmlWriter}->endTag();
+	 	}
+	 	$this->{xmlWriter}->endTag();	 	
 	 	$this->{xmlWriter}->startTag('invokedFunction',
 	 		'argumentsNumber' => ($t->getInvokedFunction()->getArgumentsNumber()),
 	 		'stub' => ($t->getInvokedFunction()->isStub() ? 'true' : 'false')

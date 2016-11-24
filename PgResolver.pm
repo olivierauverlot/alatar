@@ -58,7 +58,7 @@ sub _resolveColumnReference {
 	my ($this,$columnReference) = @_;	
 	
 	my ($tableRef,$columnRef);
-	
+	# print $columnReference->getTable()->getName();
 	if(ref($columnReference->getColumn()) eq '') {
 		# the column reference is undefined
 		if(ref($columnReference->getTable()) eq '') {

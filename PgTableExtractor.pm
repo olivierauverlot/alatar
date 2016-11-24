@@ -18,7 +18,7 @@ sub new {
 # --------------------------------------------------
 sub _extractObject {
 	my ($this,$table) = @_;
-	my ($name,$code) = $table =~ /(.*?)\s\((.*)\)$/gi;
+	my ($name,$code) = $table =~ /\"?(.*?)\"?\s\((.*)\)$/gi;
 	my $columnExtractor;
 
 	$this->{entity} = SqlTable->new($this->{owner},$name);

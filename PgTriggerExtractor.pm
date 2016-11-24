@@ -1,6 +1,7 @@
 package PgTriggerExtractor;
 
 use strict;
+use String::Util qw(trim);
 
 our @ISA = qw(PgExtractor);
 
@@ -17,11 +18,14 @@ sub _extractObject {
 	my ($this,$code) = @_;
 
 	$this->{entity} = SqlTrigger->new($this->{owner});
-	
-	my @items = $code =~ /(.+?)\s(BEFORE|AFTER|INSTEAD\sOF)\s(INSERT|UPDATE|DELETE|TRUNCATE)\sON\s(.+?)\sFOR\sEACH\s(ROW|STATEMENT)\sEXECUTE\sPROCEDURE\s(.+)\(/gi;
+
+	my @items = $code =~ /(.+?)\s(BEFORE|AFTER|INSTEAD\sOF)\s(.*?)\sON\s(.+?)\sFOR\sEACH\s(ROW|STATEMENT)\sEXECUTE\sPROCEDURE\s(.+)\(/gi;
 	$this->{entity}->setName($items[0]);
 	$this->{entity}->setFire($items[1]);
-	$this->{entity}->setEvent($items[2]);
+	my @events = split(/OR/, $items[2]);
+	foreach my $event (@events) {
+		$this->{entity}->addEvent(trim($event));
+	}
 	$this->{entity}->setTable($items[3]);
 	$this->{entity}->setLevel($items[4]);
 	# pour le moment, on passe 0 arguments (il faudra vérifiquer le nombre d'arguments)

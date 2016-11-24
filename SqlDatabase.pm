@@ -226,7 +226,7 @@ sub _extractTables {
 		$tableName = $table->getName();
 		
 		# extract PK constraint if exists
-		my @pkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sPRIMARY\sKEY\s\((.*?)\);/gi;
+		my @pkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sPRIMARY\sKEY\s\((.*?)\);/gi;
 		if(scalar(@pkConstraint) == 2) {
 			my $constraint = SqlPrimaryKeyConstraint->new($table,$pkConstraint[0]);
 			# list of columns
@@ -239,7 +239,7 @@ sub _extractTables {
 		
 		# extract FK constraint if exists
 		# nom_contrainte,colonneFK, table_pointée,colonne pointée
-		my @fkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sFOREIGN\sKEY\s\((.*?)\)\sREFERENCES\s(.*?)\((.*?)\).*?;/;
+		my @fkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sFOREIGN\sKEY\s\((.*?)\)\sREFERENCES\s\"?(.*?)\"?\((.*?)\).*?;/;
 
 		if(scalar(@fkConstraint) == 4) {
 			# Define the source column 
@@ -257,7 +257,7 @@ sub _extractTables {
 		# ALTER TABLE ONLY t ADD CONSTRAINT t_unique UNIQUE (name, category);
 		# nom_contrainte,liste_colonnes
 		# my @uniqueConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g;
-		while ($this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g) {
+		while ($this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g) {
         	my $constraint = SqlUniqueConstraint->new($table,$1);
 			# list of columns
 			foreach my $columnName (split(/,/ , $2)) {

@@ -14,7 +14,7 @@ sub new {
 	my ($class,$owner) = @_;
  	my $this = $class->SUPER::new($owner,'undef');
 	$this->{fire} = '';
-	$this->{event} = '';
+	$this->{events} = [ ];
 	$this->{table} = '';
 	$this->{level} = '';
 	$this->{invokedFunction} = undef;
@@ -49,14 +49,14 @@ sub setFire {
 	$this->{fire} = $value;	
 }
 
-sub getEvent {
+sub getEvents {
 	my ($this) = @_;
-	return $this->{event};
+	return $this->{events};
 }
 
-sub setEvent {
-	my ($this,$value) = @_;
-	$this->{event} = $value;	
+sub addEvent {
+	my ($this,$event) = @_;
+	push(@{$this->{events}},$event);	
 }
 
 sub getTable {

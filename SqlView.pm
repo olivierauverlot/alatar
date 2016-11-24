@@ -42,3 +42,5 @@ sub getSqlRequest {
 	my ($this) = @_;
 	return $this->{request};
 }
+
+1;

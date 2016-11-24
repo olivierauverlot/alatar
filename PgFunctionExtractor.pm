@@ -63,10 +63,10 @@ sub _buildName {
 sub _extractRequests {
 	my ($this) = @_;
 	my $reqNumber;
-	my @requests = $this->{entity}->getBodySection() =~ /(SELECT|UPDATE|INSERT|DELETE)(.*?)(;)/gi;
+	my @requests = $this->{entity}->getBodySection() =~ /(SELECT|UPDATE|INSERT|DELETE)\s(.*?)(;)/gi;
 	$reqNumber = 0;
 	for(my $i = 0;$i <= ($#requests - 2);$i+=3) {
-		my $request = "$requests[$i]$requests[$i + 1];";
+		my $request = "$requests[$i] $requests[$i + 1];";
 		# If the exclude option is true, the SQL request is deleted to avoid the referencement of the invoked functions	
 		if(Configuration->getOption('exclude')) {
 			my $reqPattern = quotemeta($request);
