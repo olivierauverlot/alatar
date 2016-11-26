@@ -258,10 +258,10 @@ sub _addTriggerDefinitions {
  			'level' => $t->getLevel()
  		);
  		$this->{xmlWriter}->startTag('table');
-	 	$this->{xmlWriter}->characters($t->getTable());
+ 		$this->{xmlWriter}->characters($t->getTableReference()->getName());
 	 	$this->{xmlWriter}->endTag();
 	 	$this->{xmlWriter}->startTag('events');
-	 	foreach my $event (@{$t->getEvents()}) {
+	 	foreach my $event ($t->getEvents()) {
 	 		$this->{xmlWriter}->startTag('event');
 	 		$this->{xmlWriter}->characters($event);
 	 		$this->{xmlWriter}->endTag();

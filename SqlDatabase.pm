@@ -81,6 +81,17 @@ sub getObjectsWithName {
 	return (grep { $_->getName() eq $name} @objects);
 }
 
+sub getFirstObjectWithName {
+	my ($this,$name,@objects) = @_;
+	my @arrayOfObjects;
+	@arrayOfObjects = (grep { $_->getName() eq $name} @objects);
+	if(scalar(@arrayOfObjects) > 0) {
+		return $arrayOfObjects[0];
+	} else {
+		return undef;
+	}
+}
+
 sub getObjects {
 	my ($this) = @_;
 	return @{$this->{objects}};

@@ -26,7 +26,7 @@ sub _extractObject {
 	foreach my $event (@events) {
 		$this->{entity}->addEvent(trim($event));
 	}
-	$this->{entity}->setTable($items[3]);
+	$this->{entity}->setTableName($items[3]);
 	$this->{entity}->setLevel($items[4]);
 	# pour le moment, on passe 0 arguments (il faudra vérifiquer le nombre d'arguments)
 	$this->{entity}->setInvokedFunction(SqlFunctionInvocation->new($this,$items[5],0));

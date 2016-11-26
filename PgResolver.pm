@@ -52,6 +52,20 @@ sub _resolveInvokedFunctionsByTriggers {
 	}
 }
 
+# Resolve the used table (or view) in a trigger definition
+sub _resolveUsedTablesByTriggers() {
+	my ($this) = @_;
+	my @triggers = $this->{owner}->getSqlTriggers();
+	my @tables = $this->{owner}->getAllTables();
+	foreach my $trigger (@triggers) {
+		foreach my $table (@tables) {
+			if($trigger->getTableName() eq $table->getName()) {
+				$trigger->setTableReference($table);
+			}
+		}
+	}
+}
+
 # resolve a column reference and returns an valid SqlColumn instance
 # recoit p et id
 sub _resolveColumnReference {
@@ -108,6 +122,7 @@ sub resolveAllLinks {
 	my ($this) = @_;
 	$this->_resolveInvokedFunctions();
 	$this->_resolveInvokedFunctionsByTriggers();
+	$this->_resolveUsedTablesByTriggers();
 	$this->_resolveConstraints();
 }
 

@@ -45,6 +45,7 @@ sub _extractArgumentsNumber {
 	}
 }
 
+# Create cursor definitions contained in a function
 sub _extractCursorDefinitions {
 	my ($this) = @_;
 	my @cursors = $this->{entity}->getDeclareSection() =~ /(\w*)\s+CURSOR\s+(.*)FOR\s+(.*\;)/gi;
@@ -139,7 +140,7 @@ sub _extractObject {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
 		$this->{entity}->addArg(SqlArgument->new($this->{entity},$p[0],SqlDataType->new($this->{entity},$p[1])));
 	}
-	if(@params != undef) {
+	if(@params) {
 		$this->{entity}->setArgumentsNumber(scalar(@params));
 	} else { $this->{entity}->setArgumentsNumber(0); }
 	
