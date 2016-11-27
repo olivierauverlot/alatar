@@ -299,9 +299,11 @@ sub _extractSequences {
 
 sub _extractFunctions {
 	my ($this) = @_;
-	my @functions = $this->{schema} =~ /CREATE\sFUNCTION\s(.*?)END;\s*\$\$;/gi;
-	foreach my $fcode (@functions) {
-		my $extractor = PgFunctionExtractor->new($this,$fcode);
+	my $code;
+	my @functions = $this->{schema} =~ /CREATE\sFUNCTION\s(.*?\sAS\s*(?<separator>\$.*?\$)\s*.*?)(?P=separator);/gi;
+	for(my $i=0;$i<scalar(@functions);$i+=2) {
+		$code = $functions[$i];
+		my $extractor = PgFunctionExtractor->new($this,$code);
 		my $function = $extractor->getEntity();
 		$this->addObject($function);
 		
