@@ -37,6 +37,13 @@ sub printString {
 # Setters and getters
 # -----------------------------------------------------------------------------
 
+# the owner of a column is a table and the owner of a table is the database
+# we must take the owner of the onwer...
+sub getDatabaseReference {
+	my ($this) = @_;
+	return $this->getOwner()->getOwner();
+}
+
 sub setDataType {
 	my ($this,$dataType) = @_;
 	$this->{dataType} = $dataType;

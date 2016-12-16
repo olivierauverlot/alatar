@@ -1,9 +1,9 @@
-package SqlDataType;
+package SqlEnumerationType;
 
 use strict;
-use SqlObject;
+use SqlDataType;
 
-our @ISA = qw(SqlObject);
+our @ISA = qw(SqlDataType);
 
 sub new {
 	my ($class,$owner,$name) = @_;
@@ -12,19 +12,14 @@ sub new {
  	return $this;            
 }
 
-sub isSqlDataType {
+sub isSqlEnumerationType {
 	my ($this) = @_;
 	return 1;
 }
 
 sub getObjectType {
 	my ($this) = @_;
-	return 'SqlDataType';
-}
-
-sub printString {
-	my ($this) = @_;
-	return $this->getObjectType() . ' : ' . $this->{name};
+	return 'SqlEnumerationType';
 }
 
 1;

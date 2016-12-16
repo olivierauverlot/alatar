@@ -14,6 +14,8 @@ sub new {
 	$this->{constraints} = [ ];
 	$this->{invokedFunctions} = [ ];
    	$this->{callers} = [ ];
+   	$this->{parentTableName} = '';
+   	$this->{parentTableReference} = undef;
  	bless($this,$class);
  	return $this;            
 }
@@ -38,7 +40,33 @@ sub printString {
 	return $this->getObjectType() . ' : ' . $this->{name};
 }
 
+# answer true if the table inherits from another table
+sub isChildren {
+	my ($this) = @_;
+	return ($this->{parentTableName} ne '')
+}
+
 # setters and getters
+sub getParentTableName {
+	my ($this) = @_;
+	return $this->{parentTableName};
+}
+
+sub setParentTableName {
+	my ($this,$parent) = @_;
+	$this->{parentTableName} = $parent;
+}
+
+sub getParentTableReference {
+	my ($this) = @_;
+	return $this->{parentTableReference};
+}
+
+sub setParentTableReference {
+	my ($this,$parent) = @_;
+	$this->{parentTableReference} = $parent;
+}
+
 sub addColumn {
 	my ($this,$column) = @_;
 	push(@{$this->{columns}},$column);

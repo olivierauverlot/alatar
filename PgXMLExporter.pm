@@ -203,7 +203,8 @@ sub _addTables {
 	$this->{xmlWriter}->startTag('tables');
 	foreach my $t ($this->{model}->getSqlTables()) {
 		$this->{xmlWriter}->startTag('table',
-			'name' => $t->getName()
+			'name' => $t->getName(),
+			'parentTable' => $t->getParentTableName()
 		);
 		$this->{xmlWriter}->startTag('columns');
 		foreach my $c ($t->getColumns()) {

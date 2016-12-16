@@ -17,6 +17,20 @@ sub new {
  	return $this;            
 }
 
+# Resolve the inherited tables
+sub _resolveInheritedTables {
+	my ($this) = @_;
+	my @inheritedTables = $this->{owner}->getInheritedTables();
+	my @tables = $this->{owner}->getSqlTables();
+	foreach my $i (@inheritedTables) {
+		foreach my $t (@tables) {
+			if($i->getParentTableName() eq $t->getName()) {
+				$i->setParentTableReference($t);
+			}
+		}
+	}
+}
+
 # Resolve the invoked functions in a function
 sub _resolveInvokedFunctions {
 	my ($this) = @_;
@@ -120,6 +134,7 @@ sub _resolveConstraints {
 
 sub resolveAllLinks {
 	my ($this) = @_;
+	$this->_resolveInheritedTables();
 	$this->_resolveInvokedFunctions();
 	$this->_resolveInvokedFunctionsByTriggers();
 	$this->_resolveUsedTablesByTriggers();

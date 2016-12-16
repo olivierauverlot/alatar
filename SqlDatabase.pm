@@ -10,6 +10,8 @@ use PgTriggerExtractor;
 use SqlFunction;
 use PgResolver;
 use SqlSequence;
+use SqlEnumerationType;
+use SqlCompositeType;
 use SqlTable;
 use SqlTrigger;
 use SqlColumnReference;
@@ -32,6 +34,8 @@ sub new {
  		$this->{schema} = $this->_clean($schema);
 	 	$this->{resolver} = PgResolver->new($this);
 	 	$this->_extractDatabaseSetup();
+	 	$this->_extractEnumerationTypes();
+	 	$this->_extractCompositeTypes();
 	 	$this->_extractTables();
 	 	$this->_extractViews();
 	 	$this->_extractSequences();
@@ -97,6 +101,17 @@ sub getObjects {
 	return @{$this->{objects}};
 }
 
+sub getSqlDataTypes {
+	my ($this) = @_;
+	my @datatypes;
+	foreach my $obj ($this->getObjects()) {
+	 	if($obj->isSqlDataType()) {
+	 		push(@datatypes,$obj);
+	 	}
+	}
+	return @datatypes;
+}
+
 sub getSqlTables {
 	my ($this) = @_;
 	my @tables;
@@ -128,6 +143,11 @@ sub getAllTables {
 	 	}
 	}
 	return @tables;
+}
+
+sub getInheritedTables {
+	my ($this) = @_;
+	return grep { $_->isChildren() } $this->getSqlTables();
 }
 
 sub getSqlFunctions {
@@ -226,6 +246,14 @@ sub _extractDatabaseSetup {
 	}
 }
 
+sub _extractEnumerationTypes {
+	my ($this) = @_;
+}
+
+sub _extractCompositeTypes {
+	my ($this) = @_;
+}
+	 	
 sub _extractTables {
 	my ($this) = @_;
 	my ($table,$tableName);

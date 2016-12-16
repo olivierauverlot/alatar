@@ -35,6 +35,14 @@ sub getOwnerName {
 	return $this->getOwner()->getName();
 }
 
+# this method must surcharged by the objects that need
+# to access directly to the database reference
+# The owner of most objects is generaly the database herself.
+sub getDatabaseReference {
+	my ($this) = @_;
+	return $this->getOwner();
+}
+
 sub setOwner {
 	my ($this,$owner) = @_;
 	$this->{owner} = $owner;
@@ -50,7 +58,22 @@ sub setName {
 	$this->{name} = trim($name);
 }
 
+sub isSqlDataTypeReference {
+	my ($this) = @_;
+	return 0;
+}
+
 sub isSqlDataType {
+	my ($this) = @_;
+	return 0;
+}
+
+sub isSqlEnumerationType {
+	my ($this) = @_;
+	return 0;
+}
+
+sub isSqlCompositeType {
 	my ($this) = @_;
 	return 0;
 }

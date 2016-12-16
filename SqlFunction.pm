@@ -24,7 +24,7 @@ sub new {
   	$this->{newColumns} = [ ];
    	$this->{oldColumns} = [ ];
   	$this->{requests} = [ ];
- 	$this->{returnType} = 'void';
+ 	$this->{returnType} = undef;
  	$this->{signature} = '';
  	bless($this,$class);    
  	return $this;            

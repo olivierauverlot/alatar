@@ -13,7 +13,7 @@ use SqlArgument;
 use SqlCursor;
 use SqlRequest;
 use SqlFunctionInvocation;
-use SqlDataType;
+use SqlDataTypeReference;
 
 our @ISA = qw(PgExtractor);
 
@@ -117,7 +117,7 @@ sub _extractObject {
 	$this->{entity}->setSignature($items[0]);
 	@items = $code =~ /RETURNS\s(\w+\s?\w*)/i;
 	if(@items) {
-		$this->{entity}->setReturnType(SqlDataType->new($this->{entity},$items[0])); 
+		$this->{entity}->setReturnType(SqlDataTypeReference->new($this->{entity},$items[0])); 
 	}	
 	@items = $code =~ /LANGUAGE\s*(\w*)/i;
 	if(@items) {
@@ -138,7 +138,7 @@ sub _extractObject {
 	my @params = $this->{entity}->getSignature() =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->{entity}->addArg(SqlArgument->new($this->{entity},$p[0],SqlDataType->new($this->{entity},$p[1])));
+		$this->{entity}->addArg(SqlArgument->new($this->{entity},$p[0],SqlDataTypeReference->new($this->{entity},$p[1])));
 	}
 	if(@params) {
 		$this->{entity}->setArgumentsNumber(scalar(@params));

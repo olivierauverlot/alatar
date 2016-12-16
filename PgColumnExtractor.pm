@@ -5,7 +5,6 @@ use Data::Dumper;
 use String::Util qw(trim);
 
 use SqlColumn;
-use SqlDataType;
 use SqlNotNullConstraint;
 use SqlColumnReference;
 
@@ -47,10 +46,11 @@ sub _extractObject {
 			$code =~s/$string//g;
 		}
 		
-		# read the column datatype
+		# read the column name and datatype
 		my @items = $code =~ /(.*?)\s(.*?)$/gi;
+		# print "$code\n";
 		$this->{entity}->setName($items[0]);
-		$this->{entity}->setDataType(SqlDataType->new($this->{entity},$items[1]));
+		$this->{entity}->setDataType(SqlDataTypeReference->new($this->{entity},$items[1]));
 	
 		if(defined($notNull)) {
 			my $db = $this->getOwner()->getOwner();

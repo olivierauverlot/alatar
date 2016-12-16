@@ -2,6 +2,7 @@ package SqlCursor;
 
 use strict;
 use SqlArgument;
+use SqlDataTypeReference;
 
 our @ISA = qw(SqlRequest);
 
@@ -33,6 +34,13 @@ sub getObjectType {
 sub printString {
 	my ($this) = @_;
 	return $this->getObjectType() . ' : ' . $this->{name};
+}
+
+# the owner of a cursor is a function and the owner of a function is the database
+# we must take the owner of the onwer...
+sub getDatabaseReference {
+	my ($this) = @_;
+	return $this->getOwner()->getOwner();
 }
 
 # Cursor arguments
@@ -70,7 +78,7 @@ sub _extractArguments {
 	my @params = $args =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->addArg(SqlArgument->new($this,$p[0],SqlDataType->new($this,$p[1])));
+		$this->addArg(SqlArgument->new($this,$p[0],SqlDataTypeReference->new($this,$p[1])));
 	}
 }
 

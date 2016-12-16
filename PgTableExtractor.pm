@@ -17,13 +17,30 @@ sub new {
 # actions
 # --------------------------------------------------
 sub _extractObject {
-	my ($this,$table) = @_;
-	my ($name,$code) = $table =~ /\"?(.*?)\"?\s\((.*)\)$/gi;
+	my ($this,$table) = @_;  
 	my $columnExtractor;
-
-	$this->{entity} = SqlTable->new($this->{owner},$name);
 	
-	my @items =  split(/,/, $code);
+	# we extract the parent table if exists
+	my @extractParent = $table =~ /(.*?)\sINHERITS\s\((.*?)\)/gi;
+	my $parentTableName = '';
+	if(@extractParent) {
+		$parentTableName = $extractParent[1];
+		# we must delete the inherit declaration in the table code
+		$table =~ s/INHERITS\s\(.*?\)$//gi;
+	}
+	
+	my ($name,$code) = $table =~ /\"?(.*?)\"?\s\((.*)\)/gi;
+
+	# the table instance is created
+	$this->{entity} = SqlTable->new($this->{owner},$name);
+	if($parentTableName ne '') {
+		# if the table inherit from another table, we initialize 
+		# the parentTableName instance variable
+		$this->{entity}->setParentTableName($parentTableName);
+	}
+
+	# plit list on commas except when within brackets
+	my @items =  split(/(?![^(]+\)),/, $code);
 	foreach my $item (@items) {
 		$columnExtractor = PgColumnExtractor->new($this->{entity},$item);
 		my $column = $columnExtractor->getEntity();
