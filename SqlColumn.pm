@@ -13,6 +13,7 @@ sub new {
 	$this->{dataType} = $dataType;
 	$this->{_fk} = 0;
 	$this->{_unique} = 0;
+	$this->{_inherited} = 0;
 	$this->{invokedFunctions} = [ ];
    	$this->{callers} = [ ];
  	bless($this,$class);   
@@ -52,6 +53,18 @@ sub setDataType {
 sub getDataType {
 	my ($this) = @_;
 	return $this->{dataType};
+}
+
+sub isInherited {
+	my ($this) = @_;
+
+	return $this->{_inherited};
+}
+
+sub hasBeenInherited {
+	my ($this) = @_;
+
+	$this->{_inherited} = 1;
 }
 
 sub isNotNull {

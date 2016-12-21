@@ -3,6 +3,7 @@ package SqlTable;
 use strict;
 use SqlObject;
 use SqlColumn;
+use SqlTableReference;
 
 our @ISA = qw(SqlObject);
 
@@ -14,8 +15,7 @@ sub new {
 	$this->{constraints} = [ ];
 	$this->{invokedFunctions} = [ ];
    	$this->{callers} = [ ];
-   	$this->{parentTableName} = '';
-   	$this->{parentTableReference} = undef;
+   	$this->{parentTables} = [ ];
  	bless($this,$class);
  	return $this;            
 }
@@ -41,30 +41,28 @@ sub printString {
 }
 
 # answer true if the table inherits from another table
-sub isChildren {
+sub isChild {
 	my ($this) = @_;
-	return ($this->{parentTableName} ne '')
+	my @tables = @{ ($this->{parentTables}) };
+	return (scalar(@tables) > 0)
+}
+
+# answer true if the table inherits from the specified table
+sub inheritsFrom {
+	my ($this,$tableReference) = @_;
+	my @references = grep { $_->getTableReference() == $tableReference } $this->getParentTables();
+	return @references;
 }
 
 # setters and getters
-sub getParentTableName {
+sub getParentTables {
 	my ($this) = @_;
-	return $this->{parentTableName};
+	return @{$this->{parentTables}};
 }
 
-sub setParentTableName {
-	my ($this,$parent) = @_;
-	$this->{parentTableName} = $parent;
-}
-
-sub getParentTableReference {
-	my ($this) = @_;
-	return $this->{parentTableReference};
-}
-
-sub setParentTableReference {
-	my ($this,$parent) = @_;
-	$this->{parentTableReference} = $parent;
+sub addParentTableReference {
+	my ($this,$tableName) = @_;
+	push(@{$this->{parentTables}},SqlTableReference->new($this,('ref_table_' . $tableName),$tableName));
 }
 
 sub addColumn {
@@ -72,6 +70,16 @@ sub addColumn {
 	push(@{$this->{columns}},$column);
 	return $column;
 }
+
+# answer only the columns defined in the table
+sub getLocalColumns {
+	my ($this) = @_;
+	my @columns = grep { $_->isInherited() == 0 } $this->getColumns();
+	return @columns;
+}
+
+# return all columns (private columns and columns
+# defined in parent tables (if defined)
 sub getColumns {
 	my ($this) = @_;
 	return @{$this->{columns}};

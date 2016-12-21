@@ -203,9 +203,17 @@ sub _addTables {
 	$this->{xmlWriter}->startTag('tables');
 	foreach my $t ($this->{model}->getSqlTables()) {
 		$this->{xmlWriter}->startTag('table',
-			'name' => $t->getName(),
-			'parentTable' => $t->getParentTableName()
+			'name' => $t->getName()
 		);
+		if($t->isChild()) {
+			$this->{xmlWriter}->startTag('parentTables');
+			foreach my $parentTable ($t->getParentTables()) {
+				$this->{xmlWriter}->startTag('parentTable');
+				$this->{xmlWriter}->characters($parentTable->getTableName());
+				$this->{xmlWriter}->endTag(); # end of tag parentTable
+			}
+			$this->{xmlWriter}->endTag(); # end of tag parentTables
+		}
 		$this->{xmlWriter}->startTag('columns');
 		foreach my $c ($t->getColumns()) {
 			$this->{xmlWriter}->startTag('column',
@@ -213,12 +221,13 @@ sub _addTables {
 				'dataType' => $c->getDataType()->getName(),
 				'notNull' => ($c->isNotNull() ? 'true' : 'false'),
 				'primaryKey' => ($c->isPk() ? 'true' : 'false'),
-				'foreignKey' => ($c->isFk() ? 'true' : 'false')
+				'foreignKey' => ($c->isFk() ? 'true' : 'false'),
+				'inherited' => ($c->isInherited() ? 'true' : 'false')
 			);
-			$this->{xmlWriter}->endTag();
+			$this->{xmlWriter}->endTag(); # end of column tag
 		}
-		$this->{xmlWriter}->endTag();
-		$this->{xmlWriter}->endTag();
+		$this->{xmlWriter}->endTag(); # end of columns tag
+		$this->{xmlWriter}->endTag(); # end of table tag
 	}
 	$this->{xmlWriter}->endTag();	# end of table definition
 }

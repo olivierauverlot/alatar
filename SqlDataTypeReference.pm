@@ -1,12 +1,12 @@
 package SqlDataTypeReference;
 
 use strict;
-use SqlObject;
+use SqlReference;
 use SqlColumn;
 use SqlFunction;
 use SqlCursor;
 
-our @ISA = qw(SqlObject);
+our @ISA = qw(SqlReference);
 
 sub new {
 	my ($class,$owner,$name) = @_;
@@ -26,11 +26,6 @@ sub isSqlDataTypeReference {
 sub getObjectType {
 	my ($this) = @_;
 	return 'SqlDataTypeReference';
-}
-
-sub printString {
-	my ($this) = @_;
-	return $this->getObjectType() . ' : ' . $this->{name};
 }
 
 # setters and getters

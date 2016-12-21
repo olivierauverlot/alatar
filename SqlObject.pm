@@ -58,7 +58,7 @@ sub setName {
 	$this->{name} = trim($name);
 }
 
-sub isSqlDataTypeReference {
+sub isSqlReference {
 	my ($this) = @_;
 	return 0;
 }
@@ -128,9 +128,5 @@ sub isSqlConstraint {
 	return 0;
 }
 
-sub isSqlColumnReference {
-	my ($this) = @_;
-	return 1;
-}
 
 1;

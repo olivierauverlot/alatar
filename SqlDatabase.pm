@@ -147,7 +147,7 @@ sub getAllTables {
 
 sub getInheritedTables {
 	my ($this) = @_;
-	return grep { $_->isChildren() } $this->getSqlTables();
+	return grep { $_->isChild() } $this->getSqlTables();
 }
 
 sub getSqlFunctions {

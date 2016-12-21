@@ -24,11 +24,36 @@ sub _resolveInheritedTables {
 	my @tables = $this->{owner}->getSqlTables();
 	foreach my $i (@inheritedTables) {
 		foreach my $t (@tables) {
-			if($i->getParentTableName() eq $t->getName()) {
-				$i->setParentTableReference($t);
+			foreach my $r ($i->getParentTables()) {
+				if($r->getTableName() eq $t->getName()) {
+					$r->setTableReference($t);
+				}
 			}
 		}
 	}
+}
+
+# copy the inherited columns
+sub _copyColumnsInInheritedTables {
+	my ($this) = @_;
+	my @inheritedTables = $this->{owner}->getInheritedTables();
+	foreach my $t (@inheritedTables) {
+		foreach my $r ($t->getParentTables()) {
+			my @inheritedColumns = $r->getTableReference()->getColumns();
+			foreach my $c (@inheritedColumns) {
+				my $ic = SqlColumn->new($t,$c->getName());
+				$ic->hasBeenInherited();
+				$ic->setDataType(SqlDataTypeReference->new($ic,$c->getDataType()));
+				$t->addColumn($ic);
+			}
+		}
+	}
+}
+
+# copy the inheritable constraints (NOT NULL, DEFAULT, CHECK)
+# in the inherited tables
+sub _copyConstraintsInInheritedTables {
+	my ($this) = @_;
 }
 
 # Resolve the invoked functions in a function
@@ -132,13 +157,22 @@ sub _resolveConstraints {
 	}
 }
 
+# Resolve constraints (NOT NULL, CHECK, DEFAULT VALUE) for inherited columns
+
+sub _resolveConstraintsForInheritedColumns {
+
+}
+
 sub resolveAllLinks {
 	my ($this) = @_;
 	$this->_resolveInheritedTables();
+	$this->_copyColumnsInInheritedTables();
+	$this->_copyConstraintsInInheritedTables();
 	$this->_resolveInvokedFunctions();
 	$this->_resolveInvokedFunctionsByTriggers();
 	$this->_resolveUsedTablesByTriggers();
 	$this->_resolveConstraints();
+	$this->_resolveConstraintsForInheritedColumns();
 }
 
 1;

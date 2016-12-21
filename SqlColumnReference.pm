@@ -1,10 +1,10 @@
 package SqlColumnReference;
 
 use strict;
-use SqlObject;
+use SqlReference;
 use Data::Dumper;
 
-our @ISA = qw(SqlObject);
+our @ISA = qw(SqlReference);
 
 sub new {
 	my ($class,$owner,$name,$table,$column) = @_;
@@ -18,11 +18,6 @@ sub new {
 sub getObjectType {
 	my ($this) = @_;
 	return 'SqlColumnReference';
-}
-
-sub printString {
-	my ($this) = @_;
-	return $this->getObjectType();
 }
 
 sub isSqlColumnReference {

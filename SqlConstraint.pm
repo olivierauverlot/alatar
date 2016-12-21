@@ -2,7 +2,6 @@ package SqlConstraint;
 
 use strict;
 use Data::Dumper;
-use Attribute::Abstract;
 use SqlObject;
 
 our @ISA = qw(SqlObject);
@@ -11,6 +10,7 @@ sub new {
 	my ($class,$owner,$name) = @_;
 	my $this = $class->SUPER::new($owner,$name);
 	$this->{columns} = [ ];
+	$this->{_inheritanceConstraint} = 0;
  	bless($this,$class);
  	return $this;            
 }
@@ -25,9 +25,14 @@ sub printString {
 	return $this->getObjectType() . ' : ' . $this->{name};
 }
 
+sub isInheritable {
+	my ($this) = @_;
+	return $this->{_inheritanceConstraint};
+}
+
 sub isSqlConstraint {
 	my ($this) = @_;
-	return 0;
+	return 1;
 }
 
 sub isSqlPrimaryKeyConstraint {

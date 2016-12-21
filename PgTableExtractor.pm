@@ -21,10 +21,10 @@ sub _extractObject {
 	my $columnExtractor;
 	
 	# we extract the parent table if exists
-	my @extractParent = $table =~ /(.*?)\sINHERITS\s\((.*?)\)/gi;
-	my $parentTableName = '';
-	if(@extractParent) {
-		$parentTableName = $extractParent[1];
+	my @extractParents = $table =~ /(.*?)\sINHERITS\s\((.*?)\)/gi;
+	my $parentTableNames = '';
+	if(@extractParents) {
+		$parentTableNames = $extractParents[1];
 		# we must delete the inherit declaration in the table code
 		$table =~ s/INHERITS\s\(.*?\)$//gi;
 	}
@@ -33,13 +33,16 @@ sub _extractObject {
 
 	# the table instance is created
 	$this->{entity} = SqlTable->new($this->{owner},$name);
-	if($parentTableName ne '') {
-		# if the table inherit from another table, we initialize 
-		# the parentTableName instance variable
-		$this->{entity}->setParentTableName($parentTableName);
+	if($parentTableNames ne '') {
+		# if the table inherit from another table(s), we initialize 
+		# the parentTableName instance variable (an array)
+		my @tables = split(/,/,$parentTableNames);
+		foreach my $table (@tables) { 
+			$this->{entity}->addParentTableReference($table);
+		}
 	}
 
-	# plit list on commas except when within brackets
+	# split list on commas except when within brackets
 	my @items =  split(/(?![^(]+\)),/, $code);
 	foreach my $item (@items) {
 		$columnExtractor = PgColumnExtractor->new($this->{entity},$item);
