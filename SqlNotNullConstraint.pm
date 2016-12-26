@@ -2,9 +2,10 @@ package SqlNotNullConstraint;
 
 use strict;
 use SqlObject;
-use SqlConstraint;
+use SqlInheritedConstraint;
+use Data::Dumper;
 
-our @ISA = qw(SqlConstraint);
+our @ISA = qw(SqlInheritedConstraint);
 
 sub new {
 	my ($class,$owner,$name) = @_;
@@ -21,6 +22,13 @@ sub getObjectType {
 sub isSqlNotNullConstraint {
 	my ($this) = @_;
 	return 1;
+}
+
+sub clone {
+	my ($this,$inheritedTable) = @_; 
+	my $c = SqlNotNullConstraint->new($inheritedTable,undef);
+	$c->addAllColumnsFrom($this,$inheritedTable);
+	return $c;
 }
 
 1;

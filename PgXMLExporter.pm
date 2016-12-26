@@ -218,7 +218,7 @@ sub _addTables {
 		foreach my $c ($t->getColumns()) {
 			$this->{xmlWriter}->startTag('column',
 				'name' => $c->getName(),
-				'dataType' => $c->getDataType()->getName(),
+				'type' => $c->getDataType()->getName(),
 				'notNull' => ($c->isNotNull() ? 'true' : 'false'),
 				'primaryKey' => ($c->isPk() ? 'true' : 'false'),
 				'foreignKey' => ($c->isFk() ? 'true' : 'false'),

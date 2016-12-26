@@ -93,7 +93,7 @@ sub addConstraint {
 
 sub getConstraints {
 	my ($this) = @_;
-	return @{$this->{constraints}};
+	return @{ $this->{constraints} };
 }
 
 sub getColumnWithName {

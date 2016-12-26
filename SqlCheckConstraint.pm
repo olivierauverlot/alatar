@@ -2,8 +2,9 @@ package SqlCheckConstraint;
 
 use strict;
 use SqlObject;
+use SqlInheritedConstraint;
 
-our @ISA = qw(SqlConstraint);
+our @ISA = qw(SqlInheritedConstraint);
 
 sub new {
 	my ($class,$owner,$name) = @_;
@@ -33,6 +34,10 @@ sub addObject {
 sub getObjects {
 	my ($this) = @_;
 	return @{$this->{objects}};
+}
+
+sub clone {
+	my ($this) = @_;
 }
 
 1;

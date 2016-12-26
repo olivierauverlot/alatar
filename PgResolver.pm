@@ -43,7 +43,7 @@ sub _copyColumnsInInheritedTables {
 			foreach my $c (@inheritedColumns) {
 				my $ic = SqlColumn->new($t,$c->getName());
 				$ic->hasBeenInherited();
-				$ic->setDataType(SqlDataTypeReference->new($ic,$c->getDataType()));
+				$ic->setDataType(SqlDataTypeReference->new($ic,$c->getDataType()->getName()));
 				$t->addColumn($ic);
 			}
 		}
@@ -54,6 +54,18 @@ sub _copyColumnsInInheritedTables {
 # in the inherited tables
 sub _copyConstraintsInInheritedTables {
 	my ($this) = @_;
+	my @inheritedTables = $this->{owner}->getInheritedTables();
+	foreach my $t (@inheritedTables) {
+		foreach my $r ($t->getParentTables()) {
+			my @constraints = grep { $_->isInheritable() } $r->getTableReference()->getConstraints();
+			foreach my $c (@constraints) {
+				# the inherited constraint is added and affected 
+				# to the inherited column into the inherited table 
+				my $cc = $c->clone($t);
+				$t->addConstraint($cc);
+			}
+		}
+	}
 }
 
 # Resolve the invoked functions in a function
@@ -139,7 +151,7 @@ sub _resolveColumnReference {
 # Resolve the column references in constraints
 sub _resolveConstraints {
 	my ($this) = @_;
-	for my $table ($this->{owner}->getSqlTables) {
+	for my $table ($this->{owner}->getSqlTables()) {
 		for my $constraint ($table->getConstraints()) {
 			# we resolve only if the constraint's columns have no a reference to the owner
 			my (@columns,$reference);		
@@ -157,10 +169,25 @@ sub _resolveConstraints {
 	}
 }
 
-# Resolve constraints (NOT NULL, CHECK, DEFAULT VALUE) for inherited columns
-
-sub _resolveConstraintsForInheritedColumns {
-
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# for constraint debugging only
+sub _dumpAllConstraintReferences {
+	my ($this) = @_;
+	foreach my $t ($this->{owner}->getSqlTables()) {
+		print 'table: ' . $t->getName() . "\n";
+		print "------------------------------------\n";
+		foreach my $col ($t->getColumns()) {
+			print $col->getName() . '    ' . $col . "\n";
+		}
+		print "\n";
+		foreach my $c ($t->getConstraints()) {
+			print $c->printString() . "\n";
+			foreach my $col ($c->getColumns()) {
+				print $col->getName() . '   ' . $col ."\n";
+			}
+		}
+		print "\n\n";
+	}
 }
 
 sub resolveAllLinks {
@@ -172,7 +199,10 @@ sub resolveAllLinks {
 	$this->_resolveInvokedFunctionsByTriggers();
 	$this->_resolveUsedTablesByTriggers();
 	$this->_resolveConstraints();
-	$this->_resolveConstraintsForInheritedColumns();
+	
+	# for constraint debugging only
+	# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	# $this->_dumpAllConstraintReferences();
 }
 
 1;

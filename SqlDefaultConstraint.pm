@@ -2,8 +2,9 @@ package SqlDefaultConstraint;
 
 use strict;
 use SqlObject;
+use SqlInheritedConstraint;
 
-our @ISA = qw(SqlConstraint);
+our @ISA = qw(SqlInheritedConstraint);
 
 sub new {
 	my ($class,$owner,$name) = @_;
@@ -20,6 +21,10 @@ sub getObjectType {
 sub isSqlDefaultConstraint {
 	my ($this) = @_;
 	return 1;
+}
+
+sub clone {
+	my ($this) = @_;
 }
 
 1;
