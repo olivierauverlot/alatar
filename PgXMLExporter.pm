@@ -196,6 +196,32 @@ sub _addFunctions {
 }
 
 # --------------------------------------------------
+# Export the rules in tables and views
+# --------------------------------------------------
+sub _exportRulesOf {
+	my ($this,$table) = @_;
+	$this->{xmlWriter}->startTag('rules');
+	foreach my $r ($this->{model}->getSqlRules()) {
+		if($r->getTable()->getTableName() eq $table->getName()) {
+			$this->{xmlWriter}->startTag('rule',
+				'name' => $r->getName(),
+				'event' => $r->getEvent(),
+				'mode' => ($r->doInstead() ? 'INSTEAD' : 'ALSO')
+			);
+			$this->{xmlWriter}->startTag('request',
+				'name' => ($r->getSqlRequest()->getName())
+			);
+			$this->{xmlWriter}->startTag('sql');
+			$this->{xmlWriter}->cdata($r->getSqlRequest()->getRequest());
+			$this->{xmlWriter}->endTag(); # end of sql definition
+			$this->{xmlWriter}->endTag(); # end of request definition
+			$this->{xmlWriter}->endTag(); # end of rule tag
+		}
+	}
+	$this->{xmlWriter}->endTag();	# end of rules definition
+}
+
+# --------------------------------------------------
 # Table definitions
 # --------------------------------------------------
 sub _addTables {
@@ -228,26 +254,9 @@ sub _addTables {
 		}
 		$this->{xmlWriter}->endTag(); # end of columns tag
 		
-		
-		$this->{xmlWriter}->startTag('rules');
-		foreach my $r ($this->{model}->getSqlRules()) {
-			if($r->getTable()->getTableName() eq $t->getName()) {
-				$this->{xmlWriter}->startTag('rule',
-					'name' => $r->getName(),
-					'event' => $r->getEvent(),
-					'mode' => ($r->doInstead() ? 'INSTEAD' : 'ALSO')
-				);
-				$this->{xmlWriter}->startTag('request',
-					'name' => ($r->getSqlRequest()->getName())
-				);
-				$this->{xmlWriter}->startTag('sql');
-				$this->{xmlWriter}->cdata($r->getSqlRequest()->getRequest());
-				$this->{xmlWriter}->endTag(); # end of sql definition
-				$this->{xmlWriter}->endTag(); # end of request definition
-				$this->{xmlWriter}->endTag(); # end of rule tag
-			}
-		}
-		$this->{xmlWriter}->endTag();	# end of rules definition
+		# the rules are exported
+		$this->_exportRulesOf($t);
+	
 		$this->{xmlWriter}->endTag(); # end of table tag
 	}
 	$this->{xmlWriter}->endTag();	# end of table definition
@@ -270,6 +279,10 @@ sub _addViews {
 		$this->{xmlWriter}->cdata($v->getSqlRequest()->getRequest());
 		$this->{xmlWriter}->endTag(); # end of sql definition
 		$this->{xmlWriter}->endTag(); # end of request definition
+		
+		# the rules are exported
+		$this->_exportRulesOf($v);
+		
 		$this->{xmlWriter}->endTag(); # end of view definition
 	}
 	$this->{xmlWriter}->endTag(); # end of views definition

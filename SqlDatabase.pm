@@ -277,57 +277,91 @@ sub _extractRules() {
 	}
 }
 
+# ----------------------------------
+# return true if the table is a view
+# but pgdump has exported the view as 
+## a table with a SELECT rule 
+# -----------------------------------
+sub tableMustBeConvertedInView {
+	my ($this,$tableName) = @_;
+	
+	  my @rules = grep {$_->getTable()->getTableName() eq $tableName} $this->getSqlRules(); 
+	  if (scalar(@rules) != 1) {
+	  	return 0;
+	  } else {
+	  	return ($rules[0])->isSelectEvent()
+	  }
+}
+
+# --------------------------------------------
+# the table definition is converted to a view
+# from the sql code of the SELECT rule
+# --------------------------------------------
+sub tableBecomesView {
+	my ($this,$tableName) = @_;
+	my @rules = grep {$_->getTable()->getTableName() eq $tableName} $this->getSqlRules();
+	return "$tableName AS " . ($rules[0])->getSqlRequest()->getRequest() . ';';
+}
+
+
 sub _extractTables {
 	my ($this) = @_;
 	my ($table,$tableName);
 	my @tables = $this->{schema} =~ /CREATE\sTABLE\s(.*?);/gi;
 	foreach my $table (@tables) {
-		my $extractor = PgTableExtractor->new($this,$table);
-		$table = $extractor->getEntity();
-		$this->addObject($table);
-		$tableName = $table->getName();
-		
-		# extract PK constraint if exists
-		my @pkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sPRIMARY\sKEY\s\((.*?)\);/gi;
-		if(scalar(@pkConstraint) == 2) {
-			my $constraint = SqlPrimaryKeyConstraint->new($table,$pkConstraint[0]);
-			# list of columns
-			foreach my $columnName (split(/,/ , $pkConstraint[1])) {
-				$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($columnName)));
-			}
-			# we have only the column(s) name(s). It will be resolved later by the PgResolver
-			$table->addConstraint($constraint);
-		}
-		
-		# extract FK constraint if exists
-		# nom_contrainte,colonneFK, table_pointée,colonne pointée
-		my @fkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sFOREIGN\sKEY\s\((.*?)\)\sREFERENCES\s\"?(.*?)\"?\((.*?)\).*?;/;
-
-		if(scalar(@fkConstraint) == 4) {
-			# Define the source column 
-			my $constraint = SqlForeignKeyConstraint->new($table,$fkConstraint[0]);
-			$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($fkConstraint[1])));
+		my ($name) = $table =~ /(.*?)\s/gi;
+		if(!$this->tableMustBeConvertedInView($name)) {
+			my $extractor = PgTableExtractor->new($this,$table);
+			$table = $extractor->getEntity();
+			$this->addObject($table);
+			$tableName = $table->getName();
 			
-			# define the target column
-			$constraint->setReference(SqlColumnReference->new($this,undef,trim($fkConstraint[2]),trim($fkConstraint[3])));
-			
-			# the constraint is added to the table definition
-			$table->addConstraint($constraint);
-		}
-		
-		# extract UNIQUE constraint if exists
-		# ALTER TABLE ONLY t ADD CONSTRAINT t_unique UNIQUE (name, category);
-		# nom_contrainte,liste_colonnes
-		# my @uniqueConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g;
-		while ($this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g) {
-        	my $constraint = SqlUniqueConstraint->new($table,$1);
-			# list of columns
-			foreach my $columnName (split(/,/ , $2)) {
-				$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($columnName)));
+			# extract PK constraint if exists
+			my @pkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sPRIMARY\sKEY\s\((.*?)\);/gi;
+			if(scalar(@pkConstraint) == 2) {
+				my $constraint = SqlPrimaryKeyConstraint->new($table,$pkConstraint[0]);
+				# list of columns
+				foreach my $columnName (split(/,/ , $pkConstraint[1])) {
+					$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($columnName)));
+				}
+				# we have only the column(s) name(s). It will be resolved later by the PgResolver
+				$table->addConstraint($constraint);
 			}
-			# we have only the column(s) name(s). It will be resolved later by the PgResolver
-			$table->addConstraint($constraint);
-    	}
+			
+			# extract FK constraint if exists
+			# nom_contrainte,colonneFK, table_pointée,colonne pointée
+			my @fkConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sFOREIGN\sKEY\s\((.*?)\)\sREFERENCES\s\"?(.*?)\"?\((.*?)\).*?;/;
+	
+			if(scalar(@fkConstraint) == 4) {
+				# Define the source column 
+				my $constraint = SqlForeignKeyConstraint->new($table,$fkConstraint[0]);
+				$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($fkConstraint[1])));
+				
+				# define the target column
+				$constraint->setReference(SqlColumnReference->new($this,undef,trim($fkConstraint[2]),trim($fkConstraint[3])));
+				
+				# the constraint is added to the table definition
+				$table->addConstraint($constraint);
+			}
+			
+			# extract UNIQUE constraint if exists
+			# ALTER TABLE ONLY t ADD CONSTRAINT t_unique UNIQUE (name, category);
+			# nom_contrainte,liste_colonnes
+			# my @uniqueConstraint = $this->{schema} =~ /ALTER\sTABLE\sONLY\s$tableName\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g;
+			while ($this->{schema} =~ /ALTER\sTABLE\sONLY\s\"?$tableName\"?\s+ADD\sCONSTRAINT\s([^\s]*?)\sUNIQUE\s\((.*?)\);/g) {
+	        	my $constraint = SqlUniqueConstraint->new($table,$1);
+				# list of columns
+				foreach my $columnName (split(/,/ , $2)) {
+					$constraint->addColumn(SqlColumnReference->new($this,undef,$table,trim($columnName)));
+				}
+				# we have only the column(s) name(s). It will be resolved later by the PgResolver
+				$table->addConstraint($constraint);
+	    	} 
+		}	    	
+	    else {
+			my $extractor = PgViewExtractor->new($this,$this->tableBecomesView($name));
+			$this->addObject($extractor->getEntity());
+	    }
 	}
 }
 
