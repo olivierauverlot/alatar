@@ -62,7 +62,7 @@ sub getParentTables {
 
 sub addParentTableReference {
 	my ($this,$tableName) = @_;
-	push(@{$this->{parentTables}},SqlTableReference->new($this,('ref_table_' . $tableName),$tableName));
+	push(@{$this->{parentTables}},SqlTableReference->new($this,('parent_' . $tableName),$tableName));
 }
 
 sub addColumn {

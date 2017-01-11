@@ -7,6 +7,7 @@ use PgExtension;
 use PgViewExtractor;
 use PgFunctionExtractor;
 use PgTriggerExtractor;
+use PgRuleExtractor;
 use SqlFunction;
 use PgResolver;
 use SqlSequence;
@@ -36,6 +37,7 @@ sub new {
 	 	$this->_extractDatabaseSetup();
 	 	$this->_extractEnumerationTypes();
 	 	$this->_extractCompositeTypes();
+	 	$this->_extractRules();
 	 	$this->_extractTables();
 	 	$this->_extractViews();
 	 	$this->_extractSequences();
@@ -216,6 +218,17 @@ sub getSequences {
 	return @sequences;	
 }
 
+sub getSqlRules {
+	my ($this) = @_;
+	my @rules;
+	foreach my $obj ($this->getObjects()) {
+	 	if($obj->isSqlRule()) {
+	 		push(@rules,$obj);
+	 	}
+	}
+	return @rules;	
+}
+
 # Actions
 # -------------------------------------------------------------
 sub _clean {
@@ -253,7 +266,17 @@ sub _extractEnumerationTypes {
 sub _extractCompositeTypes {
 	my ($this) = @_;
 }
-	 	
+
+sub _extractRules() {
+	my ($this) = @_;
+	my @rules = $this->{schema} =~ /CREATE\sRULE\s(.*?);/gi;
+	foreach my $rule (@rules) {
+		my $extractor = PgRuleExtractor->new($this,$rule);
+		$rule = $extractor->getEntity();
+		$this->addObject($rule);
+	}
+}
+
 sub _extractTables {
 	my ($this) = @_;
 	my ($table,$tableName);

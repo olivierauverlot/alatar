@@ -103,8 +103,22 @@ sub _resolveInvokedFunctionsByTriggers {
 	}
 }
 
+# Resolve the used tables (and views) in a rule definition
+sub _resolveUsedTablesByRules {
+	my ($this) = @_;
+	my @rules = $this->{owner}->getSqlRules();
+	my @tables = $this->{owner}->getAllTables();
+	foreach my $rule (@rules) {
+		foreach my $table (@tables) {
+			if($rule->getTable()->getTableName() eq $table->getName()) {
+				$rule->getTable()->setTableReference($table);
+			}
+		}
+	}	
+}
+
 # Resolve the used table (or view) in a trigger definition
-sub _resolveUsedTablesByTriggers() {
+sub _resolveUsedTablesByTriggers {
 	my ($this) = @_;
 	my @triggers = $this->{owner}->getSqlTriggers();
 	my @tables = $this->{owner}->getAllTables();
@@ -197,6 +211,7 @@ sub resolveAllLinks {
 	$this->_copyConstraintsInInheritedTables();
 	$this->_resolveInvokedFunctions();
 	$this->_resolveInvokedFunctionsByTriggers();
+	$this->_resolveUsedTablesByRules();
 	$this->_resolveUsedTablesByTriggers();
 	$this->_resolveConstraints();
 	

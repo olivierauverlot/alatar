@@ -227,6 +227,27 @@ sub _addTables {
 			$this->{xmlWriter}->endTag(); # end of column tag
 		}
 		$this->{xmlWriter}->endTag(); # end of columns tag
+		
+		
+		$this->{xmlWriter}->startTag('rules');
+		foreach my $r ($this->{model}->getSqlRules()) {
+			if($r->getTable()->getTableName() eq $t->getName()) {
+				$this->{xmlWriter}->startTag('rule',
+					'name' => $r->getName(),
+					'event' => $r->getEvent(),
+					'mode' => ($r->doInstead() ? 'INSTEAD' : 'ALSO')
+				);
+				$this->{xmlWriter}->startTag('request',
+					'name' => ($r->getSqlRequest()->getName())
+				);
+				$this->{xmlWriter}->startTag('sql');
+				$this->{xmlWriter}->cdata($r->getSqlRequest()->getRequest());
+				$this->{xmlWriter}->endTag(); # end of sql definition
+				$this->{xmlWriter}->endTag(); # end of request definition
+				$this->{xmlWriter}->endTag(); # end of rule tag
+			}
+		}
+		$this->{xmlWriter}->endTag();	# end of rules definition
 		$this->{xmlWriter}->endTag(); # end of table tag
 	}
 	$this->{xmlWriter}->endTag();	# end of table definition

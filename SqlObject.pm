@@ -78,6 +78,11 @@ sub isSqlCompositeType {
 	return 0;
 }
 
+sub isSqlRule {
+	my ($this) = @_;
+	return 0;
+}
+
 sub isSqlTable {
 	my ($this) = @_;
 	return 0;

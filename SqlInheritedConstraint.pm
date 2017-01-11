@@ -30,7 +30,7 @@ sub addAllColumnsFrom {
 	my ($this,$parentConstraint,$inheritedTable) = @_;
 	my $db = $this->getOwner()->getDatabaseReference();
 	foreach my $columnReference ($parentConstraint->getColumns()) {
-		my $r = SqlColumnReference->new($db,undef,$inheritedTable,$columnReference->getColumn()->getName());
+		my $r = SqlColumnReference->new($db,undef,$inheritedTable,$columnReference->getColumn());
 		$this->addColumn($r);
 	}
 }
