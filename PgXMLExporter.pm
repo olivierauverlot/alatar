@@ -31,6 +31,17 @@ sub new {
  	return $this;            
 }
 
+sub _exportSqlFileToJSOn {
+	my ($this,$sqlPath) = @_;
+	
+	if(Configuration->getOption('requestsPath')) {
+		$this->{xmlWriter}->startTag('json');
+		my $jsonData = qx { $this->{parseFilePath} "$sqlPath"};
+		$this->{xmlWriter}->cdata($jsonData);
+		$this->{xmlWriter}->endTag();
+	}
+}
+
 # --------------------------------------------------
 # Extensions
 # --------------------------------------------------
@@ -96,13 +107,9 @@ sub _addFunctions {
 					$this->{xmlWriter}->startTag('sql');
 					$this->{xmlWriter}->cdata($r->getRequest());
 		 			$this->{xmlWriter}->endTag();
-		 			if(Configuration->getOption('requestsPath')) {
-			 			$this->{xmlWriter}->startTag('json');
-			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
-			 			my $jsonData = qx { $this->{parseFilePath} "$dest"};
-						$this->{xmlWriter}->cdata($jsonData);
-			 			$this->{xmlWriter}->endTag();
-		 			}
+		 			
+		 			$this->_exportSqlFileToJSOn(Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql');
+
 		 			$this->{xmlWriter}->endTag();
 		 		}
 		 		$this->{xmlWriter}->endTag();
@@ -134,13 +141,9 @@ sub _addFunctions {
 					$this->{xmlWriter}->startTag('sql');
 					$this->{xmlWriter}->cdata($r->getRequest());
 		 			$this->{xmlWriter}->endTag();
-		 			if(Configuration->getOption('requestsPath')) {
-			 			$this->{xmlWriter}->startTag('json');
-			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
-			 			my $jsonData = qx { $this->{parseFilePath} "$dest"};
-						$this->{xmlWriter}->cdata($jsonData);
-			 			$this->{xmlWriter}->endTag();
-		 			}
+		 			
+		 			$this->_exportSqlFileToJSOn(Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql');
+		 				
 		 			$this->{xmlWriter}->endTag();
 		 		}
 		 		$this->{xmlWriter}->endTag();
@@ -236,13 +239,9 @@ sub _exportRulesOf {
 			$this->{xmlWriter}->startTag('sql');
 			$this->{xmlWriter}->cdata($r->getSqlRequest()->getRequest());
 			$this->{xmlWriter}->endTag(); # end of sql definition
-			if(Configuration->getOption('requestsPath')) {
-				$this->{xmlWriter}->startTag('json');
-				my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('rules_folder') . '/' . $r->getName() . '_' . $r->getId() . '.sql';
-				my $jsonData = qx { $this->{parseFilePath} "$dest"};
-				$this->{xmlWriter}->cdata($jsonData);
-				$this->{xmlWriter}->endTag(); # end of json definition
-			}
+			
+			$this->_exportSqlFileToJSOn(Configuration->getOption('requestsPath') . Configuration->getOption('rules_folder') . '/' . $r->getName() . '_' . $r->getId() . '.sql');
+			
 			$this->{xmlWriter}->endTag(); # end of request definition
 			$this->{xmlWriter}->endTag(); # end of rule tag
 		}
@@ -313,13 +312,9 @@ sub _addViews {
 		$this->{xmlWriter}->startTag('sql');
 		$this->{xmlWriter}->cdata($v->getSqlRequest()->getRequest());
 		$this->{xmlWriter}->endTag(); # end of sql definition
-		if(Configuration->getOption('requestsPath')) {
-			$this->{xmlWriter}->startTag('json');
-			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('views_folder') . '/' . $v->getName() . '.sql';
-			my $jsonData = qx { $this->{parseFilePath} "$dest"};
-			$this->{xmlWriter}->cdata($jsonData);
-			$this->{xmlWriter}->endTag();
-		}
+		
+		$this->_exportSqlFileToJSOn(Configuration->getOption('requestsPath') . Configuration->getOption('views_folder') . '/' . $v->getName() . '.sql');
+		
 		$this->{xmlWriter}->endTag(); # end of request definition
 		
 		# the rules are exported
