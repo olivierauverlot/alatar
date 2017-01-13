@@ -12,6 +12,7 @@ sub new {
 	my $this = {
 		model => $model
 	};
+	$this->{parseFilePath} = '"' . Configuration->getOption('appFolder') . '/bin/parse_file' . '"';
 	$this->{xmlOutput} = new IO::File(">" . Configuration->getOption('xmlFilePath'));
 	$this->{xmlWriter} = new XML::Writer(OUTPUT => $this->{xmlOutput}, DATA_MODE => 1, DATA_INDENT=>2);
  	bless($this,$class);
@@ -56,12 +57,12 @@ sub _addExtensions {
 sub _addFunctions {
 	my ($this) = @_;
 	my (@args,@requests,@cursors,@invokedMethods,@callers,@row);
-	my $parseFilePath = '"' . Configuration->getOption('appFolder') . '/bin/parse_file' . '"';
 	
  	$this->{xmlWriter}->startTag('functions');
  	foreach my $f ($this->{model}->getSqlFunctions()) { 
  		$this->{xmlWriter}->startTag('function', 
  			'name' => $f->getName(),
+ 			'id' => $f->getId(),
  			'language' => $f->getLanguage(),
  			'returnType' => $f->getReturnTypeName(),
  			'comments' => ($f->isCommented() ? 'true' : 'false')
@@ -70,7 +71,9 @@ sub _addFunctions {
  		if(@args) {
 	 		$this->{xmlWriter}->startTag('arguments');
 	 		foreach my $a (@args) {
-	 			$this->{xmlWriter}->startTag('argument');
+	 			$this->{xmlWriter}->startTag('argument',
+	 				'id' => $a->getId()
+	 			);
 	 			$this->{xmlWriter}->startTag('name');
 	 			$this->{xmlWriter}->characters($a->getName());
 	 			$this->{xmlWriter}->endTag();
@@ -87,7 +90,8 @@ sub _addFunctions {
 		 		$this->{xmlWriter}->startTag('requests');
 		 		foreach my $r (@requests) {
 					$this->{xmlWriter}->startTag('request',
-						'name' => $r->getName()
+						'name' => $r->getName(),
+						 'id' => $r->getId()
 					);
 					$this->{xmlWriter}->startTag('sql');
 					$this->{xmlWriter}->cdata($r->getRequest());
@@ -95,7 +99,7 @@ sub _addFunctions {
 		 			if(Configuration->getOption('requestsPath')) {
 			 			$this->{xmlWriter}->startTag('json');
 			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
-			 			my $jsonData = qx { $parseFilePath "$dest"};
+			 			my $jsonData = qx { $this->{parseFilePath} "$dest"};
 						$this->{xmlWriter}->cdata($jsonData);
 			 			$this->{xmlWriter}->endTag();
 		 			}
@@ -109,7 +113,8 @@ sub _addFunctions {
 				$this->{xmlWriter}->startTag('cursors');
 		 		foreach my $r (@cursors) {
 					$this->{xmlWriter}->startTag('cursor',
-						'name' => $r->getName()
+						'name' => $r->getName(),
+						'id' => $r->getId()
 					);
 					@args = $r->getArgs();
 					if(@args) {
@@ -126,13 +131,13 @@ sub _addFunctions {
 						}
 						$this->{xmlWriter}->endTag();
 					}
-					$this->{xmlWriter}->startTag('code');
+					$this->{xmlWriter}->startTag('sql');
 					$this->{xmlWriter}->cdata($r->getRequest());
 		 			$this->{xmlWriter}->endTag();
 		 			if(Configuration->getOption('requestsPath')) {
 			 			$this->{xmlWriter}->startTag('json');
 			 			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
-			 			my $jsonData = qx { $parseFilePath "$dest"};
+			 			my $jsonData = qx { $this->{parseFilePath} "$dest"};
 						$this->{xmlWriter}->cdata($jsonData);
 			 			$this->{xmlWriter}->endTag();
 		 			}
@@ -145,10 +150,18 @@ sub _addFunctions {
 		if(@invokedMethods) {
 	 		$this->{xmlWriter}->startTag('invokedFunctions');
 	 		foreach my $if (@invokedMethods) {
-	 			$this->{xmlWriter}->startTag('invokedFunction',
-	 				'argumentsNumber' => $if->getArgumentsNumber(),
-	 				'stub' => ($if->isStub() ? 'true' : 'false')
-	 			);
+	 			if(!$if->isStub()) { # Temporary solution. We must produce stub functions in the model to avoid broken references
+		 			$this->{xmlWriter}->startTag('invokedFunction',
+		 				'argumentsNumber' => $if->getArgumentsNumber(),
+		 				'stub' => ($if->isStub() ? 'true' : 'false'),
+		 				'id' => $if->getFunctionReference()->getId()
+		 			);
+	 			} else {
+	 				$this->{xmlWriter}->startTag('invokedFunction',
+		 				'argumentsNumber' => $if->getArgumentsNumber(),
+		 				'stub' => 'true'
+		 			);
+	 			}
 	 			$this->{xmlWriter}->characters($if->getName());
 	 			$this->{xmlWriter}->endTag();
 	 		}
@@ -160,7 +173,8 @@ sub _addFunctions {
 	 		foreach my $caller (@callers) {
 	 			$this->{xmlWriter}->startTag('caller',
 	 				'argumentsNumber' => $caller->getArgumentsNumber(),
-	 				'stub' => ($caller->isStub() ? 'true' : 'false')
+	 				'stub' => ($caller->isStub() ? 'true' : 'false'),
+	 				'id' => $caller->getFunctionReference()->getId()
 	 			);
 	 			$this->{xmlWriter}->characters($caller->getName());
 	 			$this->{xmlWriter}->endTag();
@@ -200,25 +214,40 @@ sub _addFunctions {
 # --------------------------------------------------
 sub _exportRulesOf {
 	my ($this,$table) = @_;
-	$this->{xmlWriter}->startTag('rules');
-	foreach my $r ($this->{model}->getSqlRules()) {
-		if($r->getTable()->getTableName() eq $table->getName()) {
+	my @rules;
+	foreach my $rule ($this->{model}->getSqlRules()) {
+		if($rule->getTable()->getTableName() eq $table->getName()) {
+			push(@rules,$rule);
+		}
+	}
+	if(@rules) {
+		$this->{xmlWriter}->startTag('rules');
+		foreach my $r (@rules) {
 			$this->{xmlWriter}->startTag('rule',
 				'name' => $r->getName(),
+				'id' => $r->getId(),
 				'event' => $r->getEvent(),
 				'mode' => ($r->doInstead() ? 'INSTEAD' : 'ALSO')
 			);
 			$this->{xmlWriter}->startTag('request',
-				'name' => ($r->getSqlRequest()->getName())
+				'name' => ($r->getSqlRequest()->getName()),
+				'id' => $r->getId()
 			);
 			$this->{xmlWriter}->startTag('sql');
 			$this->{xmlWriter}->cdata($r->getSqlRequest()->getRequest());
 			$this->{xmlWriter}->endTag(); # end of sql definition
+			if(Configuration->getOption('requestsPath')) {
+				$this->{xmlWriter}->startTag('json');
+				my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('rules_folder') . '/' . $r->getName() . '_' . $r->getId() . '.sql';
+				my $jsonData = qx { $this->{parseFilePath} "$dest"};
+				$this->{xmlWriter}->cdata($jsonData);
+				$this->{xmlWriter}->endTag(); # end of json definition
+			}
 			$this->{xmlWriter}->endTag(); # end of request definition
 			$this->{xmlWriter}->endTag(); # end of rule tag
 		}
+		$this->{xmlWriter}->endTag();	# end of rules definition
 	}
-	$this->{xmlWriter}->endTag();	# end of rules definition
 }
 
 # --------------------------------------------------
@@ -229,13 +258,16 @@ sub _addTables {
 	$this->{xmlWriter}->startTag('tables');
 	foreach my $t ($this->{model}->getSqlTables()) {
 		$this->{xmlWriter}->startTag('table',
-			'name' => $t->getName()
+			'name' => $t->getName(),
+			'id' => $t->getId()
 		);
 		if($t->isChild()) {
 			$this->{xmlWriter}->startTag('parentTables');
 			foreach my $parentTable ($t->getParentTables()) {
-				$this->{xmlWriter}->startTag('parentTable');
-				$this->{xmlWriter}->characters($parentTable->getTableName());
+				$this->{xmlWriter}->startTag('parentTable',
+					'name' => $parentTable->getTableName(),
+					'id' => $parentTable->getId()
+				);
 				$this->{xmlWriter}->endTag(); # end of tag parentTable
 			}
 			$this->{xmlWriter}->endTag(); # end of tag parentTables
@@ -244,6 +276,7 @@ sub _addTables {
 		foreach my $c ($t->getColumns()) {
 			$this->{xmlWriter}->startTag('column',
 				'name' => $c->getName(),
+				'id' => $c->getId(),
 				'type' => $c->getDataType()->getName(),
 				'notNull' => ($c->isNotNull() ? 'true' : 'false'),
 				'primaryKey' => ($c->isPk() ? 'true' : 'false'),
@@ -270,14 +303,23 @@ sub _addViews {
 	$this->{xmlWriter}->startTag('views');
 	foreach my $v ($this->{model}->getSqlViews()) {
 		$this->{xmlWriter}->startTag('view',
-			'name' => $v->getName()
+			'name' => $v->getName(),
+			'id' => $v->getId()
 		);
 		$this->{xmlWriter}->startTag('request',
-			'name' => ($v->getSqlRequest()->getName())
+			'name' => ($v->getSqlRequest()->getName()),
+			'id' => $v->getId()
 		);
 		$this->{xmlWriter}->startTag('sql');
 		$this->{xmlWriter}->cdata($v->getSqlRequest()->getRequest());
 		$this->{xmlWriter}->endTag(); # end of sql definition
+		if(Configuration->getOption('requestsPath')) {
+			$this->{xmlWriter}->startTag('json');
+			my $dest = Configuration->getOption('requestsPath') . Configuration->getOption('views_folder') . '/' . $v->getName() . '.sql';
+			my $jsonData = qx { $this->{parseFilePath} "$dest"};
+			$this->{xmlWriter}->cdata($jsonData);
+			$this->{xmlWriter}->endTag();
+		}
 		$this->{xmlWriter}->endTag(); # end of request definition
 		
 		# the rules are exported
@@ -298,11 +340,14 @@ sub _addTriggerDefinitions {
  	foreach my $t ($this->{model}->getSqlTriggers()) { 
  		$this->{xmlWriter}->startTag('trigger', 
  			'name' => $t->getName(),
+			'id' => $t->getId(),
  			'fire' => $t->getFire(),
  			'level' => $t->getLevel()
  		);
- 		$this->{xmlWriter}->startTag('table');
- 		$this->{xmlWriter}->characters($t->getTableReference()->getName());
+ 		$this->{xmlWriter}->startTag('table',
+ 			'name' => $t->getTableReference()->getName(),
+ 			'id' => $t->getTableReference()->getId()
+ 		);
 	 	$this->{xmlWriter}->endTag();
 	 	$this->{xmlWriter}->startTag('events');
 	 	foreach my $event ($t->getEvents()) {
@@ -312,9 +357,10 @@ sub _addTriggerDefinitions {
 	 	}
 	 	$this->{xmlWriter}->endTag();	 	
 	 	$this->{xmlWriter}->startTag('invokedFunction',
+	 		'id' => ($t->getInvokedFunction()->getId()),
 	 		'argumentsNumber' => ($t->getInvokedFunction()->getArgumentsNumber()),
 	 		'stub' => ($t->getInvokedFunction()->isStub() ? 'true' : 'false')
-	 		);
+	 	);
 	 	$this->{xmlWriter}->characters($t->getInvokedFunction()->getName());
 	 	$this->{xmlWriter}->endTag();
  		$this->{xmlWriter}->endTag();
@@ -328,9 +374,10 @@ sub _addTriggerDefinitions {
 sub _addSequences {
 	my ($this) = @_;
 	$this->{xmlWriter}->startTag('sequences');
- 	foreach my $t ($this->{model}->getSequences()) {
+ 	foreach my $s ($this->{model}->getSequences()) {
  		$this->{xmlWriter}->startTag('sequence', 
- 			'name' => $t->getName()
+ 			'name' => $s->getName(),
+ 			'id' => $s->getId()
  		);
  		$this->{xmlWriter}->endTag();
  	}

@@ -86,6 +86,14 @@ sub saveRequests {
 		push(@cursorFiles,$r->getName());
 		saveRequest($dest,$r->getRequest());
 	}
+	foreach my $v ($model->getSqlViews()) {
+		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('views_folder') . '/' . $v->getName() . '.sql';
+		saveRequest($dest,$v->getSqlRequest()->getRequest());
+	}
+	foreach my $r ($model->getSqlRules()) {
+		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('rules_folder') . '/' . $r->getName() . '_' . $r->getId() . '.sql';
+		saveRequest($dest,$r->getSqlRequest()->getRequest());
+	}
 }
 
 sub formatWithCRLF {
@@ -124,7 +132,12 @@ sub createCompactSchema {
 sub run {
 	my ($schema);
 
-	my @subFolders = (Configuration->getOption('requests_folder') , Configuration->getOption('cursors_folder'));
+	my @subFolders = (
+		Configuration->getOption('requests_folder') , 
+		Configuration->getOption('cursors_folder'),
+		Configuration->getOption('views_folder'),
+		Configuration->getOption('rules_folder'),
+	);
 	
 	$schema = loadSQLSchema(Configuration->getOption('schemaPath'));
 
@@ -155,6 +168,8 @@ sub run {
 Configuration->setOption('appFolder',defineAppFolder());
 Configuration->setOption('requests_folder','/requests');
 Configuration->setOption('cursors_folder','/cursors');
+Configuration->setOption('views_folder','/views');
+Configuration->setOption('rules_folder','/rules');
 Configuration->setOption('exclude',0);
 Configuration->setOption('schemaPath',undef);
 Configuration->setOption('simplifiedSchemaPath',undef);

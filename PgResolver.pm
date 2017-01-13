@@ -17,6 +17,8 @@ sub new {
  	return $this;            
 }
 
+
+
 # Resolve the inherited tables
 sub _resolveInheritedTables {
 	my ($this) = @_;

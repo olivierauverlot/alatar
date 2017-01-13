@@ -24,6 +24,6 @@ sub _extractObject {
 	my $reqSql;
 	
 	$this->{entity} = SqlView->new($this->{owner},$name);
-	$reqSql = SqlRequest->new($this->{entity},($name . '_R',trim($code)));
+	$reqSql = SqlRequest->new($this->{entity},($name . '_R',(trim($code) . ';')));
 	$this->{entity}->setSqlRequest($reqSql);
 }

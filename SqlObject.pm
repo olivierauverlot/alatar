@@ -25,6 +25,13 @@ sub getObjectType {
 	return 'SqlObject';
 }
 
+# returns an unique id based on the object reference
+sub getId() {
+	my ($this) = @_;
+	my ($id) = $this =~ /\((.*?)\)/;
+	return $id;
+}
+
 sub getOwner {
 	my ($this) = @_;
 	return $this->{owner};

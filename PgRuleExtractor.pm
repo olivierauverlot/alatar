@@ -48,7 +48,7 @@ sub _extractObject {
 		$this->{entity}->setAlsoMode();
 	}
 	# $owner,$name,$request
-	$this->{entity}->setSqlRequest(SqlRequest->new($this,$this->_buildName($items[TABLE]),$items[REQUEST]));
+	$this->{entity}->setSqlRequest(SqlRequest->new($this,$this->_buildName($items[TABLE]),($items[REQUEST] . ';')));
 }
 	
 1;

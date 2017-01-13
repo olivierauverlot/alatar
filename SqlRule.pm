@@ -20,6 +20,16 @@ sub new {
  	return $this;    
 }
 
+sub printString {
+	my ($this) = @_;
+	return $this->getObjectType() . ' ' . $this->getEvent() . ' ON ' . $this->getTable()->getTableName();
+}
+
+sub getObjectType {
+	my ($this) = @_;
+	return 'SqlRule';
+}
+
 sub isSqlRule {
 	my ($this) = @_;
 	return 1;

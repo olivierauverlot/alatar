@@ -140,7 +140,7 @@ sub getAllTables {
 	my ($this) = @_;
 	my @tables;
 	foreach my $obj ($this->getObjects()) {
-	 	if($obj->isSqlTable()) {
+	 	if($obj->isSqlTable() || $obj->isSqlView()) {
 	 		push(@tables,$obj);
 	 	}
 	}
