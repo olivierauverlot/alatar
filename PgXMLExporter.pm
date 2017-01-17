@@ -285,6 +285,12 @@ sub _addTables {
 			$this->{xmlWriter}->endTag(); # end of column tag
 		}
 		$this->{xmlWriter}->endTag(); # end of columns tag
+
+		$this->{xmlWriter}->startTag('sql');
+		$this->{xmlWriter}->cdata($t->getSqlRequest()->getRequest());
+		$this->{xmlWriter}->endTag(); # end of sql definition
+		
+		$this->_exportSqlFileToJSOn(Configuration->getOption('requestsPath') . Configuration->getOption('tables_folder') . '/' . $t->getName() . '.sql');
 		
 		# the rules are exported
 		$this->_exportRulesOf($t);
@@ -358,9 +364,16 @@ sub _addTriggerDefinitions {
 	 	);
 	 	$this->{xmlWriter}->characters($t->getInvokedFunction()->getName());
 	 	$this->{xmlWriter}->endTag();
- 		$this->{xmlWriter}->endTag();
+
+ 		$this->{xmlWriter}->startTag('sql');
+		$this->{xmlWriter}->cdata($t->getSqlRequest()->getRequest());
+		$this->{xmlWriter}->endTag(); # end of sql definition
+		
+		$this->_exportSqlFileToJSOn(Configuration->getOption('requestsPath') . Configuration->getOption('triggers_folder') . '/' . $t->getName() . '.sql');
+
+ 		$this->{xmlWriter}->endTag(); # end of trigger definition		
  	}
-	$this->{xmlWriter}->endTag();	# end of trigger definition
+	$this->{xmlWriter}->endTag();	# end of triggers definition
 }
 
 # --------------------------------------------------

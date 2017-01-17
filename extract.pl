@@ -76,22 +76,40 @@ sub protectPath {
 # save request on disk
 sub saveRequests {
 	my $dest;
-	foreach my $r ($model->getSqlRequests()) {
-		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
-		push(@requestFiles,$r->getName());
-		saveRequest($dest,$r->getRequest());
+	foreach my $t ($model->getSqlTables()) {
+		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('tables_folder') . '/' . $t->getName() . '.sql';
+		push(@requestFiles,$t->getName());
+		saveRequest($dest,$t->getSqlRequest()->getRequest());
 	}
-	foreach my $r ($model->getSqlCursorRequests()) {
-		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
-		push(@cursorFiles,$r->getName());
-		saveRequest($dest,$r->getRequest());
+	
+	foreach my $f ($model->getSqlFunctions()) {
+		foreach my $r ($f->getSqlRequests()) {
+			$dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
+			push(@requestFiles,$r->getName());
+			saveRequest($dest,$r->getRequest());
+		}
 	}
+
+	foreach my $f ($model->getSqlFunctions()) {
+		foreach my $r ($f->getSqlCursorRequests()) {
+			$dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
+			push(@cursorFiles,$r->getName());
+			saveRequest($dest,$r->getRequest());
+		}
+	}
+
 	foreach my $v ($model->getSqlViews()) {
 		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('views_folder') . '/' . $v->getName() . '.sql';
 		saveRequest($dest,$v->getSqlRequest()->getRequest());
 	}
+	
 	foreach my $r ($model->getSqlRules()) {
 		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('rules_folder') . '/' . $r->getName() . '_' . $r->getId() . '.sql';
+		saveRequest($dest,$r->getSqlRequest()->getRequest());
+	}
+
+	foreach my $r ($model->getSqlTriggers()) {
+		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('triggers_folder') . '/' . $r->getName() . '.sql';
 		saveRequest($dest,$r->getSqlRequest()->getRequest());
 	}
 }
@@ -133,6 +151,8 @@ sub run {
 	my ($schema);
 
 	my @subFolders = (
+		Configuration->getOption('tables_folder') ,
+		Configuration->getOption('triggers_folder') ,
 		Configuration->getOption('requests_folder') , 
 		Configuration->getOption('cursors_folder'),
 		Configuration->getOption('views_folder'),
@@ -166,6 +186,8 @@ sub run {
 
 # Default values
 Configuration->setOption('appFolder',defineAppFolder());
+Configuration->setOption('tables_folder','/tables');
+Configuration->setOption('triggers_folder','/triggers');
 Configuration->setOption('requests_folder','/requests');
 Configuration->setOption('cursors_folder','/cursors');
 Configuration->setOption('views_folder','/views');

@@ -10,6 +10,7 @@ our @ISA = qw(SqlObject);
 sub new {
 	my ($class,$owner,$name) = @_;
 	my $this = $class->SUPER::new($owner,$name);
+	$this->{_request} = '';
 	$this->{view} = 0;
 	$this->{columns} = [ ];
 	$this->{constraints} = [ ];
@@ -40,6 +41,19 @@ sub printString {
 	return $this->getObjectType() . ' : ' . $this->{name};
 }
 
+# setters and getters
+sub getSqlRequest {
+	my ($this) = @_;
+	return $this->{_request};
+}
+
+sub setSqlRequest {
+	my ($this,$request) = @_;
+	$this->{_request} = $request;
+}
+
+
+# actions
 # answer true if the table inherits from another table
 sub isChild {
 	my ($this) = @_;

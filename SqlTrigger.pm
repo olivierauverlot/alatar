@@ -13,6 +13,7 @@ our @ISA = qw(SqlObject);
 sub new {
 	my ($class,$owner) = @_;
  	my $this = $class->SUPER::new($owner,'undef');
+ 	$this->{_request} = '';
 	$this->{fire} = '';
 	$this->{events} = [ ];
 	$this->{tableName} = '';
@@ -40,6 +41,16 @@ sub printString {
 
 # setters and getters
 # ----------------------------------------------------
+sub getSqlRequest {
+	my ($this) = @_;
+	return $this->{_request};
+}
+
+sub setSqlRequest {
+	my ($this,$request) = @_;
+	$this->{_request} = $request;
+}
+
 sub getFire {
 	my ($this) = @_;
 	return $this->{fire};

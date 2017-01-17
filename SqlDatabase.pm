@@ -19,6 +19,7 @@ use SqlColumnReference;
 use SqlPrimaryKeyConstraint;
 use SqlForeignKeyConstraint;
 use SqlUniqueConstraint;
+use SqlRequest;
 
 sub new {
 	my ($class,$name,$schema) = @_;
@@ -174,39 +175,6 @@ sub getSqlTriggers {
 	return @triggers;
 }
 
-sub getAllRequests {
-	my ($this) = @_;
-	my @requests;
-	foreach my $f ($this->getSqlFunctions()) {
-		foreach my $r ($f->getAllRequests()) {
-			push(@requests,$r);
-		}
-	}
-	return @requests;
-}
-
-sub getSqlRequests {
-	my ($this) = @_;
-	my @requests;
-	foreach my $f ($this->getSqlFunctions()) {
-		foreach my $r ($f->getSqlRequests()) {
-			push(@requests,$r);
-		}
-	}
-	return @requests;
-}
-
-sub getSqlCursorRequests {
-	my ($this) = @_;
-	my @requests;
-	foreach my $f ($this->getSqlFunctions()) {
-		foreach my $r ($f->getSqlCursorRequests()) {
-			push(@requests,$r);
-		}
-	}
-	return @requests;
-}
-
 sub getSequences {
 	my ($this) = @_;
 	my @sequences;
@@ -308,11 +276,12 @@ sub _extractTables {
 	my ($this) = @_;
 	my ($table,$tableName);
 	my @tables = $this->{schema} =~ /CREATE\sTABLE\s(.*?);/gi;
-	foreach my $table (@tables) {
-		my ($name) = $table =~ /(.*?)\s/gi;
+	foreach my $code (@tables) {
+		my ($name) = $code =~ /(.*?)\s/gi;
 		if(!$this->tableMustBeConvertedInView($name)) {
-			my $extractor = PgTableExtractor->new($this,$table);
+			my $extractor = PgTableExtractor->new($this,$code);
 			$table = $extractor->getEntity();
+			$table->setSqlRequest(SqlRequest->new($this,('table_' . $table->getName()),('CREATE TABLE '. $code . ';')));
 			$this->addObject($table);
 			$tableName = $table->getName();
 			
@@ -404,9 +373,11 @@ sub _extractFunctions {
 sub _extractTriggers {
 	my ($this) = @_;
 	my @triggers = $this->{schema} =~ /CREATE TRIGGER\s(.*?);/gi;
-	foreach my $trigger (@triggers) {
-		my $extractor = PgTriggerExtractor->new($this,$trigger);
-		$this->addObject($extractor->getEntity());
+	foreach my $code (@triggers) {
+		my $extractor = PgTriggerExtractor->new($this,$code);
+		my $trigger = $extractor->getEntity();
+		$trigger->setSqlRequest(SqlRequest->new($this,('trigger_' . $trigger->getName()),('CREATE TRIGGER '. $code . ';')));
+		$this->addObject($trigger);
 	}
 }
 
