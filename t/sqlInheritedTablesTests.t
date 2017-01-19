@@ -4,8 +4,8 @@ use strict;
 use Test::More 'no_plan';
 use Data::Dumper;
 
-use SqlDatabase;
-use SqlTable;
+use Alatar::Model::SqlDatabase;
+use Alatar::Model::SqlTable;
 
 my $sql = <<'SCHEMA';
 CREATE TABLE mother (
@@ -25,7 +25,7 @@ my @columns;
 my $idColumn;
 my $refColumn;
 
-my $model = SqlDatabase->new('test',$sql);
+my $model = Alatar::Model::SqlDatabase->new('test',$sql);
 my @tables = $model->getSqlTables();
 is( scalar(@tables),3,"3 tables found");
 

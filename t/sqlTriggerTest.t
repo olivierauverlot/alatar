@@ -4,9 +4,9 @@ use strict;
 use Test::More 'no_plan';
 use Data::Dumper;
 
-use SqlDatabase;
-use SqlTable;
-use SqlTrigger;
+use Alatar::Model::SqlDatabase;
+use Alatar::Model::SqlTable;
+use Alatar::Model::SqlTrigger;
 
 my $sql = <<'SCHEMA';
 CREATE TABLE p (
@@ -33,7 +33,7 @@ CREATE TRIGGER trigger1 BEFORE DELETE ON p FOR EACH ROW EXECUTE PROCEDURE foo();
 CREATE TRIGGER trigger2 AFTER INSERT OR UPDATE OR TRUNCATE ON p FOR EACH ROW EXECUTE PROCEDURE foo();
 SCHEMA
 
-my $model = SqlDatabase->new('test',$sql);
+my $model = Alatar::Model::SqlDatabase->new('test',$sql);
 my @triggers = $model->getSqlTriggers();
 is( scalar(@triggers),2,"2 triggers found");
 

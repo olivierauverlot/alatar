@@ -4,7 +4,7 @@ use strict;
 use Test::More 'no_plan';
 use Data::Dumper;
 
-use SqlDatabase;
+use Alatar::Model::SqlDatabase;
 
 my $sql = <<'SCHEMA';
 CREATE TABLE aTable (
@@ -14,7 +14,7 @@ CREATE TABLE aTable (
 CREATE RULE "_RETURN" AS ON SELECT TO aTable DO INSTEAD SELECT aTable.id FROM aTable;
 SCHEMA
 
-my $model = SqlDatabase->new('test',$sql);
+my $model = Alatar::Model::SqlDatabase->new('test',$sql);
 
 my @tables = $model->getAllTables();
 is(scalar(@tables),1,"one table found");

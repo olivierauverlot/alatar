@@ -19,10 +19,10 @@ use File::Basename;
 use Data::Dumper;
 use XML::Writer;
 use IO::File;
-use Configuration;
-use PgXMLExporter;
-use SqlDatabase;
-use SqlFunction;
+use Alatar::Configuration;
+use Alatar::PostgreSQL::PgXMLExporter;
+use Alatar::Model::SqlDatabase;
+use Alatar::Model::SqlFunction;
 
 use utf8;
 
@@ -77,14 +77,14 @@ sub protectPath {
 sub saveRequests {
 	my $dest;
 	foreach my $t ($model->getSqlTables()) {
-		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('tables_folder') . '/' . $t->getName() . '.sql';
+		$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('tables_folder') . '/' . $t->getName() . '.sql';
 		push(@requestFiles,$t->getName());
 		saveRequest($dest,$t->getSqlRequest()->getRequest());
 	}
 	
 	foreach my $f ($model->getSqlFunctions()) {
 		foreach my $r ($f->getSqlRequests()) {
-			$dest = Configuration->getOption('requestsPath') . Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
+			$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
 			push(@requestFiles,$r->getName());
 			saveRequest($dest,$r->getRequest());
 		}
@@ -92,24 +92,24 @@ sub saveRequests {
 
 	foreach my $f ($model->getSqlFunctions()) {
 		foreach my $r ($f->getSqlCursorRequests()) {
-			$dest = Configuration->getOption('requestsPath') . Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
+			$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
 			push(@cursorFiles,$r->getName());
 			saveRequest($dest,$r->getRequest());
 		}
 	}
 
 	foreach my $v ($model->getSqlViews()) {
-		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('views_folder') . '/' . $v->getName() . '.sql';
+		$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('views_folder') . '/' . $v->getName() . '.sql';
 		saveRequest($dest,$v->getSqlRequest()->getRequest());
 	}
 	
 	foreach my $r ($model->getSqlRules()) {
-		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('rules_folder') . '/' . $r->getName() . '_' . $r->getId() . '.sql';
+		$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('rules_folder') . '/' . $r->getName() . '_' . $r->getId() . '.sql';
 		saveRequest($dest,$r->getSqlRequest()->getRequest());
 	}
 
 	foreach my $r ($model->getSqlTriggers()) {
-		$dest = Configuration->getOption('requestsPath') . Configuration->getOption('triggers_folder') . '/' . $r->getName() . '.sql';
+		$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('triggers_folder') . '/' . $r->getName() . '.sql';
 		saveRequest($dest,$r->getSqlRequest()->getRequest());
 	}
 }
@@ -151,72 +151,72 @@ sub run {
 	my ($schema);
 
 	my @subFolders = (
-		Configuration->getOption('tables_folder') ,
-		Configuration->getOption('triggers_folder') ,
-		Configuration->getOption('requests_folder') , 
-		Configuration->getOption('cursors_folder'),
-		Configuration->getOption('views_folder'),
-		Configuration->getOption('rules_folder'),
+		Alatar::Configuration->getOption('tables_folder') ,
+		Alatar::Configuration->getOption('triggers_folder') ,
+		Alatar::Configuration->getOption('requests_folder') , 
+		Alatar::Configuration->getOption('cursors_folder'),
+		Alatar::Configuration->getOption('views_folder'),
+		Alatar::Configuration->getOption('rules_folder'),
 	);
 	
-	$schema = loadSQLSchema(Configuration->getOption('schemaPath'));
+	$schema = loadSQLSchema(Alatar::Configuration->getOption('schemaPath'));
 
-	$model = SqlDatabase->new(Configuration->getOption('schemaPath'),$schema);
+	$model = Alatar::Model::SqlDatabase->new(Alatar::Configuration->getOption('schemaPath'),$schema);
 
-	if(Configuration->getOption('requestsPath')) {
-		rmtree(Configuration->getOption('requestsPath'));
-		mkpath(Configuration->getOption('requestsPath'));
+	if(Alatar::Configuration->getOption('requestsPath')) {
+		rmtree(Alatar::Configuration->getOption('requestsPath'));
+		mkpath(Alatar::Configuration->getOption('requestsPath'));
 		foreach my $subFolder (@subFolders) {
-			mkpath(Configuration->getOption('requestsPath') . $subFolder);
+			mkpath(Alatar::Configuration->getOption('requestsPath') . $subFolder);
 		}
 		# Save request in folders
 		saveRequests();
 	}
 	
 	# Produce serialized version of the object representation (XML)
-	if(Configuration->getOption('xmlFilePath')) {
-		PgXMLExporter->new($model);
+	if(Alatar::Configuration->getOption('xmlFilePath')) {
+		Alatar::PostgreSQL::PgXMLExporter->new($model);
 	}
 	
 	# Create a compact version of the schema
-	if(Configuration->getOption('simplifiedSchemaPath')) {
-		createCompactSchema(Configuration->getOption('simplifiedSchemaPath'),$schema);
+	if(Alatar::Configuration->getOption('simplifiedSchemaPath')) {
+		createCompactSchema(Alatar::Configuration->getOption('simplifiedSchemaPath'),$schema);
 	}
 }
 
 # Default values
-Configuration->setOption('appFolder',defineAppFolder());
-Configuration->setOption('tables_folder','/tables');
-Configuration->setOption('triggers_folder','/triggers');
-Configuration->setOption('requests_folder','/requests');
-Configuration->setOption('cursors_folder','/cursors');
-Configuration->setOption('views_folder','/views');
-Configuration->setOption('rules_folder','/rules');
-Configuration->setOption('exclude',0);
-Configuration->setOption('schemaPath',undef);
-Configuration->setOption('simplifiedSchemaPath',undef);
-Configuration->setOption('xmlFilePath',undef);
-Configuration->setOption('RequestsPath',undef);
+Alatar::Configuration->setOption('appFolder',defineAppFolder());
+Alatar::Configuration->setOption('tables_folder','/tables');
+Alatar::Configuration->setOption('triggers_folder','/triggers');
+Alatar::Configuration->setOption('requests_folder','/requests');
+Alatar::Configuration->setOption('cursors_folder','/cursors');
+Alatar::Configuration->setOption('views_folder','/views');
+Alatar::Configuration->setOption('rules_folder','/rules');
+Alatar::Configuration->setOption('exclude',0);
+Alatar::Configuration->setOption('schemaPath',undef);
+Alatar::Configuration->setOption('simplifiedSchemaPath',undef);
+Alatar::Configuration->setOption('xmlFilePath',undef);
+Alatar::Configuration->setOption('RequestsPath',undef);
 
 # Command line parameters
 sub setSchemaPath { 
-	Configuration->setOption('schemaPath',$_[1]);
+	Alatar::Configuration->setOption('schemaPath',$_[1]);
 }
 
 sub setSimplifiedSchemaPath { 
-	Configuration->setOption('simplifiedSchemaPath',$_[1]);
+	Alatar::Configuration->setOption('simplifiedSchemaPath',$_[1]);
 }
 
 sub setXmlFilePath {
-	Configuration->setOption('xmlFilePath',$_[1]);
+	Alatar::Configuration->setOption('xmlFilePath',$_[1]);
 }
 
 sub setRequestsPath { 
-	Configuration->setOption('requestsPath',$_[1]); 
+	Alatar::Configuration->setOption('requestsPath',$_[1]); 
 }
 
 sub setExcludeOn {
-	Configuration->setOption('exclude',1);
+	Alatar::Configuration->setOption('exclude',1);
 }
 
 sub help {

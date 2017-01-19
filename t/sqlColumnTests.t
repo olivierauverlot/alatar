@@ -4,9 +4,9 @@ use strict;
 use Test::More 'no_plan';
 use Data::Dumper;
 
-use SqlDatabase;
-use SqlTable;
-use SqlColumn;
+use Alatar::Model::SqlDatabase;
+use Alatar::Model::SqlTable;
+use Alatar::Model::SqlColumn;
 
 my $sql = <<'SCHEMA';
 CREATE TABLE t (
@@ -21,7 +21,7 @@ ALTER TABLE ONLY t ADD CONSTRAINT t_unique UNIQUE (name, category);
 ALTER TABLE ONLY t ADD CONSTRAINT foo_unique UNIQUE (foo);
 SCHEMA
 
-my $model = SqlDatabase->new('test',$sql);
+my $model = Alatar::Model::SqlDatabase->new('test',$sql);
 
 my @tables = $model->getSqlTables();
 is (scalar(@tables),1,'One table found');

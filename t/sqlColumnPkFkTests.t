@@ -4,9 +4,9 @@ use strict;
 use Test::More 'no_plan';
 use Data::Dumper;
 
-use SqlDatabase;
-use SqlTable;
-use SqlColumn;
+use Alatar::Model::SqlDatabase;
+use Alatar::Model::SqlTable;
+use Alatar::Model::SqlColumn;
 
 my $sql = <<'SCHEMA';
 CREATE TABLE p (
@@ -26,7 +26,7 @@ ALTER TABLE ONLY i ADD CONSTRAINT i_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY i ADD CONSTRAINT fk_id_fk FOREIGN KEY (id_fk) REFERENCES p(id) ON DELETE RESTRICT;
 SCHEMA
 
-my $model = SqlDatabase->new('test',$sql);
+my $model = Alatar::Model::SqlDatabase->new('test',$sql);
 
 my @tables = $model->getSqlTables();
 is (scalar(@tables),2,'Two tables found');

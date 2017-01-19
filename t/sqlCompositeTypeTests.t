@@ -4,9 +4,9 @@ use strict;
 use Test::More 'no_plan';
 use Data::Dumper;
 
-use SqlDatabase;
-use SqlEnumerationType;
-use SqlCompositeType;
+use Alatar::Model::SqlDatabase;
+use Alatar::Model::SqlEnumerationType;
+use Alatar::Model::SqlCompositeType;
 
 my $sql = <<'SCHEMA';
 CREATE TYPE categoryList AS ENUM ('adventure','child','syfy');
@@ -24,7 +24,7 @@ CREATE TABLE orders (
 );
 SCHEMA
   
-my $model = SqlDatabase->new('test',$sql);
+my $model = Alatar::Model::SqlDatabase->new('test',$sql);
 my @enums = $model->getEnumerations();
 my @compositeTypes = $model->getCompositeTypes(); 
 

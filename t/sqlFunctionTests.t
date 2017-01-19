@@ -4,8 +4,8 @@ use strict;
 use Test::More 'no_plan';
 use Data::Dumper;
 
-use SqlDatabase;
-use SqlFunction;
+use Alatar::Model::SqlDatabase;
+use Alatar::Model::SqlFunction;
 
 my $sql = <<'SCHEMA';
 CREATE FUNCTION fooWithOneParameter(integer value)
@@ -39,7 +39,7 @@ SCHEMA
 
 my @args;
 
-my $model = SqlDatabase->new('test',$sql);
+my $model = Alatar::Model::SqlDatabase->new('test',$sql);
 my @functions = $model->getSqlFunctions();
 is(scalar(@functions),4,"4 functions found");
 
