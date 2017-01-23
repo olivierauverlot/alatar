@@ -28,9 +28,7 @@ use utf8;
 
 my $VERSION = '0.1 Build 20161008-1';
 
-my (@requestFiles,@cursorFiles);
-my (@userFunctionsList,%invokedFunctions);
-my ($model,$conf);
+my $model;
 
 sub version {
 	print "Alatar version $VERSION\n\n";
@@ -78,14 +76,12 @@ sub saveRequests {
 	my $dest;
 	foreach my $t ($model->getSqlTables()) {
 		$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('tables_folder') . '/' . $t->getName() . '.sql';
-		push(@requestFiles,$t->getName());
 		saveRequest($dest,$t->getSqlRequest()->getRequest());
 	}
 	
 	foreach my $f ($model->getSqlFunctions()) {
 		foreach my $r ($f->getSqlRequests()) {
 			$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql';
-			push(@requestFiles,$r->getName());
 			saveRequest($dest,$r->getRequest());
 		}
 	}
@@ -93,7 +89,6 @@ sub saveRequests {
 	foreach my $f ($model->getSqlFunctions()) {
 		foreach my $r ($f->getSqlCursorRequests()) {
 			$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
-			push(@cursorFiles,$r->getName());
 			saveRequest($dest,$r->getRequest());
 		}
 	}
