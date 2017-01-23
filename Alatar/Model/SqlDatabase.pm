@@ -8,6 +8,7 @@ use Alatar::PostgreSQL::Extractors::PgViewExtractor;
 use Alatar::PostgreSQL::Extractors::PgFunctionExtractor;
 use Alatar::PostgreSQL::Extractors::PgTriggerExtractor;
 use Alatar::PostgreSQL::Extractors::PgRuleExtractor;
+use Alatar::PostgreSQL::Extractors::PgSequenceExtractor;
 use Alatar::Model::SqlFunction;
 use Alatar::PostgreSQL::PgResolver;
 use Alatar::Model::SqlSequence;
@@ -345,9 +346,10 @@ sub _extractViews {
 
 sub _extractSequences {
 	my ($this) = @_;
-	my @sequences = $this->{schema} =~ /CREATE\sSEQUENCE\s(.*?)\s/gi;
+	my @sequences = $this->{schema} =~ /CREATE\sSEQUENCE\s(.*?);/gi;
 	foreach my $sequence (@sequences) {
-		$this->addObject(Alatar::Model::SqlSequence->new($this,$sequence));
+		my $extractor = Alatar::PostgreSQL::Extractors::PgSequenceExtractor->new($this,$sequence);
+		$this->addObject($extractor->getEntity());
 	}
 }
 
