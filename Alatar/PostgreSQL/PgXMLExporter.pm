@@ -78,9 +78,9 @@ sub _addFunctions {
  			'returnType' => $f->getReturnTypeName(),
  			'comments' => ($f->isCommented() ? 'true' : 'false')
  		);
+ 		$this->{xmlWriter}->startTag('arguments');
  		@args = $f->getArgs();
  		if(@args) {
-	 		$this->{xmlWriter}->startTag('arguments');
 	 		foreach my $a (@args) {
 	 			$this->{xmlWriter}->startTag('argument',
 	 				'id' => $a->getId()
@@ -93,8 +93,8 @@ sub _addFunctions {
 	 			$this->{xmlWriter}->endTag();
 	 			$this->{xmlWriter}->endTag();
 	 		}
-	 		$this->{xmlWriter}->endTag();
- 		}
+ 		} 
+ 		$this->{xmlWriter}->endTag(); # end of tag <arguments>
  		if($f->getAllRequests()) {
  			@requests = $f->getSqlRequests();
  			if(@requests) {
