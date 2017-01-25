@@ -381,6 +381,21 @@ sub _addSequences {
 # --------------------------------------------------
 sub _addReferences {
 	my ($this) = @_;
+	$this->{xmlWriter}->startTag('foreignKeys');
+	foreach my $t ($this->{model}->getSqlTables()) {
+		my @fks = grep {
+			$_->isSqlForeignKeyConstraint()
+		} $t->getConstraints();
+		foreach my $fk (@fks) {
+			$this->{xmlWriter}->startTag('fk',
+			'from' => $fk->getOneColumn()->getId(),
+			'to' => $fk->getReference()->getId()
+			);
+			$this->{xmlWriter}->endTag(); # end of fk
+		}
+	}
+	$this->{xmlWriter}->endTag();	# end of foreignKeys
+	
 	$this->{xmlWriter}->startTag('references');
 	$this->{xmlWriter}->startTag('inheritances');
 	foreach my $t ($this->{model}->getSqlTables()) {
