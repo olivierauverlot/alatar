@@ -83,14 +83,10 @@ sub _addFunctions {
  		if(@args) {
 	 		foreach my $a (@args) {
 	 			$this->{xmlWriter}->startTag('argument',
-	 				'id' => $a->getId()
+	 				'id' => $a->getId(),
+	 				'name' => $a->getName(),
+	 				'type' => $a->getDataType()->getName()
 	 			);
-	 			$this->{xmlWriter}->startTag('name');
-	 			$this->{xmlWriter}->characters($a->getName());
-	 			$this->{xmlWriter}->endTag();
-	 			$this->{xmlWriter}->startTag('type');
-	 			$this->{xmlWriter}->characters($a->getDataType()->getName());
-	 			$this->{xmlWriter}->endTag();
 	 			$this->{xmlWriter}->endTag();
 	 		}
  		} 
@@ -127,14 +123,12 @@ sub _addFunctions {
 				if(@args) {
 					$this->{xmlWriter}->startTag('arguments');
 					foreach $a (@args) {
-						$this->{xmlWriter}->startTag('argument');
-				 		$this->{xmlWriter}->startTag('name');
-				 		$this->{xmlWriter}->characters($a->getName());
-				 		$this->{xmlWriter}->endTag();
-				 		$this->{xmlWriter}->startTag('type');
-				 		$this->{xmlWriter}->characters($a->getDataType()->getName());
-				 		$this->{xmlWriter}->endTag();
-				 		$this->{xmlWriter}->endTag();
+						$this->{xmlWriter}->startTag('argument',
+	 						'id' => $a->getId(),
+	 						'name' => $a->getName(),
+	 						'type' => $a->getDataType()->getName()
+	 					);
+						$this->{xmlWriter}->endTag();
 					}
 					$this->{xmlWriter}->endTag();
 				}
