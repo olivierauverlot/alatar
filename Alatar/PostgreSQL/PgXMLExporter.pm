@@ -26,6 +26,7 @@ sub new {
 	$this->_addViews();
 	$this->_addTriggerDefinitions();
 	$this->_addSequences();
+	$this->_addReferences();
 	$this->{xmlWriter}->endTag();	# end of schema definition
 	$this->{xmlWriter}->end();
  	return $this;            
@@ -254,17 +255,6 @@ sub _addTables {
 			'name' => $t->getName(),
 			'id' => $t->getId()
 		);
-		if($t->isChild()) {
-			$this->{xmlWriter}->startTag('parentTables');
-			foreach my $parentTable ($t->getParentTables()) {
-				$this->{xmlWriter}->startTag('parentTable',
-					'name' => $parentTable->getTableName(),
-					'id' => $parentTable->getId()
-				);
-				$this->{xmlWriter}->endTag(); # end of tag parentTable
-			}
-			$this->{xmlWriter}->endTag(); # end of tag parentTables
-		}
 		$this->{xmlWriter}->startTag('columns');
 		foreach my $c ($t->getColumns()) {
 			$this->{xmlWriter}->startTag('column',
@@ -384,6 +374,28 @@ sub _addSequences {
  		$this->{xmlWriter}->endTag();
  	}
  	$this->{xmlWriter}->endTag();	# end of sequences list
+}
+
+# --------------------------------------------------
+# Sequences
+# --------------------------------------------------
+sub _addReferences {
+	my ($this) = @_;
+	$this->{xmlWriter}->startTag('references');
+	$this->{xmlWriter}->startTag('inheritances');
+	foreach my $t ($this->{model}->getSqlTables()) {
+		if($t->isChild()) {
+			foreach my $parentTable ($t->getParentTables()) {
+			$this->{xmlWriter}->startTag('inheritance',
+				'from' => $t->getId(),
+				'to' => $parentTable->getTableReference()->getId()
+			);
+			$this->{xmlWriter}->endTag();	# end of inheritance
+			}
+		}
+	}
+	$this->{xmlWriter}->endTag();	# end of inheritances	
+	$this->{xmlWriter}->endTag();	# end of references
 }
 
 1;
