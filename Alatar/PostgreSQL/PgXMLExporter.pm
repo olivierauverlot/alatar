@@ -95,60 +95,60 @@ sub _addFunctions {
 	 		}
  		} 
  		$this->{xmlWriter}->endTag(); # end of tag <arguments>
- 		if($f->getAllRequests()) {
- 			@requests = $f->getSqlRequests();
- 			if(@requests) {
-		 		$this->{xmlWriter}->startTag('requests');
-		 		foreach my $r (@requests) {
-					$this->{xmlWriter}->startTag('request',
-						'name' => $r->getName(),
-						 'id' => $r->getId()
-					);
-					$this->{xmlWriter}->startTag('sql');
-					$this->{xmlWriter}->cdata($r->getRequest());
-		 			$this->{xmlWriter}->endTag();
+ 		
+ 		$this->{xmlWriter}->startTag('requests');
+ 		@requests = $f->getSqlRequests();
+ 		if(@requests) {
+		 	foreach my $r (@requests) {
+				$this->{xmlWriter}->startTag('request',
+					'name' => $r->getName(),
+					'id' => $r->getId()
+				);
+				$this->{xmlWriter}->startTag('sql');
+				$this->{xmlWriter}->cdata($r->getRequest());
+		 		$this->{xmlWriter}->endTag();
 		 			
-		 			$this->_exportSqlFileToJSOn(Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql');
+		 		$this->_exportSqlFileToJSOn(Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('requests_folder') . '/' . $r->getName() . '.sql');
 
-		 			$this->{xmlWriter}->endTag();
-		 		}
 		 		$this->{xmlWriter}->endTag();
- 			}
- 			@cursors = $f->getSqlCursorRequests();
+		 	}
+ 		}
+ 		$this->{xmlWriter}->endTag(); # end of requests
  			
-			if(@cursors) {
-				$this->{xmlWriter}->startTag('cursors');
-		 		foreach my $r (@cursors) {
-					$this->{xmlWriter}->startTag('cursor',
-						'name' => $r->getName(),
-						'id' => $r->getId()
-					);
-					@args = $r->getArgs();
-					if(@args) {
-						$this->{xmlWriter}->startTag('arguments');
-						foreach $a (@args) {
-							$this->{xmlWriter}->startTag('argument');
-				 			$this->{xmlWriter}->startTag('name');
-				 			$this->{xmlWriter}->characters($a->getName());
-				 			$this->{xmlWriter}->endTag();
-				 			$this->{xmlWriter}->startTag('type');
-				 			$this->{xmlWriter}->characters($a->getDataType()->getName());
-				 			$this->{xmlWriter}->endTag();
-				 			$this->{xmlWriter}->endTag();
-						}
-						$this->{xmlWriter}->endTag();
+ 		@cursors = $f->getSqlCursorRequests();
+ 		$this->{xmlWriter}->startTag('cursors');
+		if(@cursors) {
+		 	foreach my $r (@cursors) {
+				$this->{xmlWriter}->startTag('cursor',
+					'name' => $r->getName(),
+					'id' => $r->getId()
+				);
+				@args = $r->getArgs();
+				if(@args) {
+					$this->{xmlWriter}->startTag('arguments');
+					foreach $a (@args) {
+						$this->{xmlWriter}->startTag('argument');
+				 		$this->{xmlWriter}->startTag('name');
+				 		$this->{xmlWriter}->characters($a->getName());
+				 		$this->{xmlWriter}->endTag();
+				 		$this->{xmlWriter}->startTag('type');
+				 		$this->{xmlWriter}->characters($a->getDataType()->getName());
+				 		$this->{xmlWriter}->endTag();
+				 		$this->{xmlWriter}->endTag();
 					}
-					$this->{xmlWriter}->startTag('sql');
-					$this->{xmlWriter}->cdata($r->getRequest());
-		 			$this->{xmlWriter}->endTag();
-		 			
-		 			$this->_exportSqlFileToJSOn(Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql');
-		 				
-		 			$this->{xmlWriter}->endTag();
-		 		}
+					$this->{xmlWriter}->endTag();
+				}
+				$this->{xmlWriter}->startTag('sql');
+				$this->{xmlWriter}->cdata($r->getRequest());
 		 		$this->{xmlWriter}->endTag();
-			}
+		 			
+		 		$this->_exportSqlFileToJSOn(Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql');
+		 				
+		 		$this->{xmlWriter}->endTag();
+		 	}
 		}
+		$this->{xmlWriter}->endTag(); # end of tag cursors
+			
 		@invokedMethods = $f->getInvokedFunctions();
 		if(@invokedMethods) {
 	 		$this->{xmlWriter}->startTag('invokedFunctions');
