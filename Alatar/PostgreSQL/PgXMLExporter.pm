@@ -151,8 +151,7 @@ sub _addFunctions {
 	 			if(!$if->isStub()) { # Temporary solution. We must produce stub functions in the model to avoid broken references
 		 			$this->{xmlWriter}->startTag('invokedFunction',
 		 				'argumentsNumber' => $if->getArgumentsNumber(),
-		 				'stub' => ($if->isStub() ? 'true' : 'false'),
-		 				'id' => $if->getFunctionReference()->getId()
+		 				'stub' => ($if->isStub() ? 'true' : 'false')
 		 			);
 	 			} else {
 	 				$this->{xmlWriter}->startTag('invokedFunction',
@@ -381,6 +380,9 @@ sub _addSequences {
 # --------------------------------------------------
 sub _addReferences {
 	my ($this) = @_;
+	
+	$this->{xmlWriter}->startTag('references');
+		
 	$this->{xmlWriter}->startTag('foreignKeys');
 	foreach my $t ($this->{model}->getSqlTables()) {
 		my @fks = grep {
@@ -396,7 +398,6 @@ sub _addReferences {
 	}
 	$this->{xmlWriter}->endTag();	# end of foreignKeys
 	
-	$this->{xmlWriter}->startTag('references');
 	$this->{xmlWriter}->startTag('inheritances');
 	foreach my $t ($this->{model}->getSqlTables()) {
 		if($t->isChild()) {
@@ -410,6 +411,22 @@ sub _addReferences {
 		}
 	}
 	$this->{xmlWriter}->endTag();	# end of inheritances	
+
+	$this->{xmlWriter}->startTag('invokedFunctions');
+	foreach my $f ($this->{model}->getSqlFunctions()) { 
+		my @invokedMethods = $f->getInvokedFunctions();
+		foreach my $if (@invokedMethods) {
+			if(!$if->isStub()) {
+				$this->{xmlWriter}->startTag('invokedFunction',
+					'from' => $f->getId(),
+					'to' => $if->getFunctionReference()->getId()
+			 	);
+		 		$this->{xmlWriter}->endTag();
+		 	}
+		}	
+	}
+	$this->{xmlWriter}->endTag();	# end of invoked functions	
+		
 	$this->{xmlWriter}->endTag();	# end of references
 }
 
