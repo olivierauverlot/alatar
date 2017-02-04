@@ -3,6 +3,7 @@ package Alatar::Model::SqlDatabase;
 use Data::Dumper;
 use strict;
 use String::Util qw(trim);
+use Alatar::Resolver;
 use Alatar::PostgreSQL::PgExtension;
 use Alatar::PostgreSQL::Extractors::PgViewExtractor;
 use Alatar::PostgreSQL::Extractors::PgFunctionExtractor;
@@ -10,7 +11,6 @@ use Alatar::PostgreSQL::Extractors::PgTriggerExtractor;
 use Alatar::PostgreSQL::Extractors::PgRuleExtractor;
 use Alatar::PostgreSQL::Extractors::PgSequenceExtractor;
 use Alatar::Model::SqlFunction;
-use Alatar::PostgreSQL::PgResolver;
 use Alatar::Model::SqlSequence;
 use Alatar::Model::SqlEnumerationType;
 use Alatar::Model::SqlCompositeType;
@@ -35,7 +35,7 @@ sub new {
  	bless($this,$class); 
  	if(defined($schema)) {
  		$this->{schema} = $this->_clean($schema);
-	 	$this->{resolver} = Alatar::PostgreSQL::PgResolver->new($this);
+	 	$this->{resolver} = Alatar::Resolver->new($this);
 	 	$this->_extractDatabaseSetup();
 	 	$this->_extractEnumerationTypes();
 	 	$this->_extractCompositeTypes();
@@ -294,7 +294,7 @@ sub _extractTables {
 				foreach my $columnName (split(/,/ , $pkConstraint[1])) {
 					$constraint->addColumn(Alatar::Model::SqlColumnReference->new($this,undef,$table,trim($columnName)));
 				}
-				# we have only the column(s) name(s). It will be resolved later by the PgResolver
+				# we have only the column(s) name(s). It will be resolved later by the Resolver
 				$table->addConstraint($constraint);
 			}
 			
@@ -324,7 +324,7 @@ sub _extractTables {
 				foreach my $columnName (split(/,/ , $2)) {
 					$constraint->addColumn(Alatar::Model::SqlColumnReference->new($this,undef,$table,trim($columnName)));
 				}
-				# we have only the column(s) name(s). It will be resolved later by the PgResolver
+				# we have only the column(s) name(s). It will be resolved later by the Resolver
 				$table->addConstraint($constraint);
 	    	} 
 		}	    	

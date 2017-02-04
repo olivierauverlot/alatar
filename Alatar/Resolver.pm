@@ -1,4 +1,4 @@
-package Alatar::PostgreSQL::PgResolver;
+package Alatar::Resolver;
 
 use Data::Dumper;
 
