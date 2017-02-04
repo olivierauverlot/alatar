@@ -376,24 +376,32 @@ sub _addSequences {
 }
 
 # --------------------------------------------------
-# Sequences
+# References
 # --------------------------------------------------
+
+sub _addReference {
+	my ($this,$from,$to) = @_;
+	$this->{xmlWriter}->startTag('reference',
+		'source' => $from->getObjectType(),
+		'target' => $to->getObjectType(),
+		'from' => $from->getId(),
+		'to' => $to->getId()
+		);
+	$this->{xmlWriter}->endTag(); # end of the reference
+}
+
 sub _addReferences {
 	my ($this) = @_;
 	
 	$this->{xmlWriter}->startTag('references');
-		
+	
 	$this->{xmlWriter}->startTag('foreignKeys');
 	foreach my $t ($this->{model}->getSqlTables()) {
 		my @fks = grep {
 			$_->isSqlForeignKeyConstraint()
 		} $t->getConstraints();
 		foreach my $fk (@fks) {
-			$this->{xmlWriter}->startTag('fk',
-			'from' => $fk->getOneColumn()->getId(),
-			'to' => $fk->getReference()->getId()
-			);
-			$this->{xmlWriter}->endTag(); # end of fk
+			$this->_addReference($fk->getOneColumn(),$fk->getReference());
 		}
 	}
 	$this->{xmlWriter}->endTag();	# end of foreignKeys
@@ -402,32 +410,35 @@ sub _addReferences {
 	foreach my $t ($this->{model}->getSqlTables()) {
 		if($t->isChild()) {
 			foreach my $parentTable ($t->getParentTables()) {
-			$this->{xmlWriter}->startTag('inheritance',
-				'from' => $t->getId(),
-				'to' => $parentTable->getTableReference()->getId()
-			);
-			$this->{xmlWriter}->endTag();	# end of inheritance
+				$this->_addReference($t,$parentTable->getTableReference());
 			}
 		}
 	}
-	$this->{xmlWriter}->endTag();	# end of inheritances	
+	$this->{xmlWriter}->endTag();	# end of inheritances
 
 	$this->{xmlWriter}->startTag('invokedFunctions');
 	foreach my $f ($this->{model}->getSqlFunctions()) { 
 		my @invokedMethods = $f->getInvokedFunctions();
 		foreach my $if (@invokedMethods) {
 			if(!$if->isStub()) {
-				$this->{xmlWriter}->startTag('invokedFunction',
-					'from' => $f->getId(),
-					'to' => $if->getFunctionReference()->getId()
-			 	);
-		 		$this->{xmlWriter}->endTag();
+				$this->_addReference($f,$if->getFunctionReference());
 		 	}
 		}	
 	}
-	$this->{xmlWriter}->endTag();	# end of invoked functions	
-		
+	$this->{xmlWriter}->endTag();	# end of invoked functions
+
+	$this->{xmlWriter}->startTag('triggers');
+	foreach my $t ($this->{model}->getSqlTriggers()) {
+		$this->{xmlWriter}->startTag('trigger');
+			$this->_addReference($t,$t->getTableReference());
+			$this->_addReference($t,$t->getInvokedFunction()->getFunctionReference());
+		$this->{xmlWriter}->endTag();	# end of trigger
+	}
+	$this->{xmlWriter}->endTag();	# end of triggers
+	
 	$this->{xmlWriter}->endTag();	# end of references
+
+	
 }
 
 1;
