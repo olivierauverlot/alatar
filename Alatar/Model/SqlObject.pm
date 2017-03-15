@@ -120,11 +120,6 @@ sub isSqlArgument {
 	return 0;
 }
 
-sub isSqlFunctionInvocation {
-	my ($this) = @_;
-	return 0;
-}
-
 sub isSqlCursor {
 	my ($this) = @_;
 	return 0;

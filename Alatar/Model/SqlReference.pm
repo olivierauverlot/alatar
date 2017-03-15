@@ -40,8 +40,8 @@ sub printString {
 
 # getters and setters
 sub setTarget {
-	my ($this,sqlEntity) = @_;
-	$this->{target} = sqlEntity;
+	my ($this,$sqlEntity) = @_;
+	$this->{target} = $sqlEntity;
 }
 
 sub getTarget {

@@ -3,7 +3,7 @@ package Alatar::Resolver;
 use Data::Dumper;
 
 use Alatar::Model::SqlFunction;
-use Alatar::Model::SqlFunctionInvocation;
+use Alatar::Model::Refs::SqlFunctionReference;
 use Alatar::Model::SqlTable;
 use Alatar::Model::SqlColumn;
 use strict;
@@ -80,11 +80,7 @@ sub _resolveInvokedFunctions {
 	 	foreach my $invokedFunction ($obj->getInvokedFunctions()) {
 	 		foreach my $f (@functions) {
 	 			if($invokedFunction->isInvocationOf($f)) {
-	 				$invokedFunction->setFunctionReference($f);
-	 				my $caller = $invokedFunction->getOwner();
-	 				my $invocation = Alatar::Model::SqlFunctionInvocation->new($caller,$caller->getName(),$caller->getArgumentsNumber());
-	 				$invocation->setFunctionReference($caller);
-	 				$f->addCaller($invocation);
+	 				$invokedFunction->setTarget($f);
 	 			} 
 	 		}
 	 	}
@@ -99,7 +95,7 @@ sub _resolveInvokedFunctionsByTriggers {
 	foreach my $t (@triggers) {
 		foreach my $f (@functions) {
 			if($t->getInvokedFunction()->isInvocationOf($f)) {
-				$t->getInvokedFunction()->setFunctionReference($f);
+				$t->getInvokedFunction()->setTarget($f);
 			}
 		}
 	}

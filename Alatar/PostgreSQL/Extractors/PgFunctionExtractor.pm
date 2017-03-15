@@ -12,7 +12,7 @@ use Alatar::Model::SqlFunction;
 use Alatar::Model::SqlArgument;
 use Alatar::Model::SqlCursor;
 use Alatar::Model::SqlRequest;
-use Alatar::Model::SqlFunctionInvocation;
+use Alatar::Model::Refs::SqlFunctionReference;
 use Alatar::Model::SqlDataTypeReference;
 
 our @ISA = qw(Alatar::PostgreSQL::Extractors::PgExtractor);
@@ -91,7 +91,7 @@ sub _extractInvokedFunctions {
 	for(my $i = 0;$i <= ($#funcs - 1);$i+=2) {
 		# Before to add it at the invoked functions list, we must validate that it's not a cursor and it's not a PostgreSQL keyword
 		if($this->_isNotCursorName($funcs[$i]) && Alatar::PostgreSQL::PgKeywords->isNotKeyword($funcs[$i])) {
-			$this->{entity}->addInvokedFunction(Alatar::Model::SqlFunctionInvocation->new($this->{entity},$funcs[$i],$this->_extractArgumentsNumber($funcs[$i+1])));
+			$this->{entity}->addInvokedFunction(Alatar::Model::Refs::SqlFunctionReference->new($this->{entity},$funcs[$i],$this->_extractArgumentsNumber($funcs[$i+1])));
 			$this->_extractInvokedFunctions($funcs[$i+1]);
 		}
 	}

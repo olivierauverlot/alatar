@@ -29,7 +29,7 @@ sub _extractObject {
 	$this->{entity}->setTableName($items[3]);
 	$this->{entity}->setLevel($items[4]);
 	# pour le moment, on passe 0 arguments (il faudra vérifiquer le nombre d'arguments)
-	$this->{entity}->setInvokedFunction(Alatar::Model::SqlFunctionInvocation->new($this,$items[5],0));
+	$this->{entity}->setInvokedFunction(Alatar::Model::Refs::SqlFunctionReference->new($this,$items[5],0));
 }
 
 1;

@@ -1,4 +1,4 @@
-package Alatar::Model::Refs::SqlFunctionInvocation;
+package Alatar::Model::Refs::SqlFunctionReference;
 
 use strict;
 use Alatar::Model::SqlObject;

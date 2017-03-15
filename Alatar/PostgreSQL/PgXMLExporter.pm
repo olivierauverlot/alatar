@@ -421,7 +421,7 @@ sub _addReferences {
 		my @invokedMethods = $f->getInvokedFunctions();
 		foreach my $if (@invokedMethods) {
 			if(!$if->isStub()) {
-				$this->_addReference($f,$if->getFunctionReference());
+				$this->_addReference($f,$if->getTarget());
 		 	}
 		}	
 	}
@@ -431,7 +431,7 @@ sub _addReferences {
 	foreach my $t ($this->{model}->getSqlTriggers()) {
 		$this->{xmlWriter}->startTag('trigger');
 			$this->_addReference($t,$t->getTableReference());
-			$this->_addReference($t,$t->getInvokedFunction()->getFunctionReference());
+			$this->_addReference($t,$t->getInvokedFunction()->getTarget());
 		$this->{xmlWriter}->endTag();	# end of trigger
 	}
 	$this->{xmlWriter}->endTag();	# end of triggers
