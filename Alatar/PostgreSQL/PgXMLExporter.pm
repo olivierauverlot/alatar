@@ -213,7 +213,7 @@ sub _exportRulesOf {
 	my ($this,$table) = @_;
 	my @rules;
 	foreach my $rule ($this->{model}->getSqlRules()) {
-		if($rule->getTable()->getTableName() eq $table->getName()) {
+		if($rule->getTable()->getName() eq $table->getName()) {
 			push(@rules,$rule);
 		}
 	}
@@ -410,7 +410,7 @@ sub _addReferences {
 	foreach my $t ($this->{model}->getSqlTables()) {
 		if($t->isChild()) {
 			foreach my $parentTable ($t->getParentTables()) {
-				$this->_addReference($t,$parentTable->getTableReference());
+				$this->_addReference($t,$parentTable->getTarget());
 			}
 		}
 	}

@@ -27,8 +27,8 @@ sub _resolveInheritedTables {
 	foreach my $i (@inheritedTables) {
 		foreach my $t (@tables) {
 			foreach my $r ($i->getParentTables()) {
-				if($r->getTableName() eq $t->getName()) {
-					$r->setTableReference($t);
+				if($r->getName() eq $t->getName()) {
+					$r->setTarget($t);
 				}
 			}
 		}
@@ -41,7 +41,7 @@ sub _copyColumnsInInheritedTables {
 	my @inheritedTables = $this->{owner}->getInheritedTables();
 	foreach my $t (@inheritedTables) {
 		foreach my $r ($t->getParentTables()) {
-			my @inheritedColumns = $r->getTableReference()->getColumns();
+			my @inheritedColumns = $r->getTarget()->getColumns();
 			foreach my $c (@inheritedColumns) {
 				my $ic = Alatar::Model::SqlColumn->new($t,$c->getName());
 				$ic->hasBeenInherited();
@@ -59,7 +59,7 @@ sub _copyConstraintsInInheritedTables {
 	my @inheritedTables = $this->{owner}->getInheritedTables();
 	foreach my $t (@inheritedTables) {
 		foreach my $r ($t->getParentTables()) {
-			my @constraints = grep { $_->isInheritable() } $r->getTableReference()->getConstraints();
+			my @constraints = grep { $_->isInheritable() } $r->getTarget()->getConstraints();
 			foreach my $c (@constraints) {
 				# the inherited constraint is added and affected 
 				# to the inherited column into the inherited table 
@@ -108,8 +108,8 @@ sub _resolveUsedTablesByRules {
 	my @tables = $this->{owner}->getAllTables();
 	foreach my $rule (@rules) {
 		foreach my $table (@tables) {
-			if($rule->getTable()->getTableName() eq $table->getName()) {
-				$rule->getTable()->setTableReference($table);
+			if($rule->getTable()->getName() eq $table->getName()) {
+				$rule->getTable()->setTarget($table);
 			}
 		}
 	}	

@@ -5,7 +5,7 @@ use String::Util qw(trim);
 use Data::Dumper;
 
 use Alatar::Model::SqlRule;
-use Alatar::Model::SqlTableReference;
+use Alatar::Model::Refs::SqlTableReference;
 use Alatar::Model::SqlRequest;
 
 use constant NAME => 0;
@@ -41,7 +41,7 @@ sub _extractObject {
 	
 	$this->{entity} = Alatar::Model::SqlRule->new($this->{owner},$items[NAME]);
 	$this->{entity}->setEvent($items[EVENT]);
-	$this->{entity}->setTable(Alatar::Model::SqlTableReference->new($this->getOwner(),$items[NAME],$items[TABLE]));
+	$this->{entity}->setTable(Alatar::Model::Refs::SqlTableReference->new($this->getOwner(),$items[TABLE]));
 	if($items[MODE] eq 'INSTEAD') {
 		$this->{entity}->setInsteadMode();
 	} else {

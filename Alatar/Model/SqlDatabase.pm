@@ -254,7 +254,7 @@ sub _extractRules() {
 sub tableMustBeConvertedInView {
 	my ($this,$tableName) = @_;
 	
-	  my @rules = grep {$_->getTable()->getTableName() eq $tableName} $this->getSqlRules(); 
+	  my @rules = grep {$_->getTable()->getName() eq $tableName} $this->getSqlRules(); 
 	  if (scalar(@rules) != 1) {
 	  	return 0;
 	  } else {
@@ -268,7 +268,7 @@ sub tableMustBeConvertedInView {
 # --------------------------------------------
 sub tableBecomesView {
 	my ($this,$tableName) = @_;
-	my @rules = grep {$_->getTable()->getTableName() eq $tableName} $this->getSqlRules();
+	my @rules = grep {$_->getTable()->getName() eq $tableName} $this->getSqlRules();
 	return "$tableName AS " . ($rules[0])->getSqlRequest()->getRequest() . ';';
 }
 

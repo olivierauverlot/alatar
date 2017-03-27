@@ -3,7 +3,7 @@ package Alatar::Model::SqlTable;
 use strict;
 use Alatar::Model::SqlObject;
 use Alatar::Model::SqlColumn;
-use Alatar::Model::SqlTableReference;
+use Alatar::Model::Refs::SqlTableReference;
 
 our @ISA = qw(Alatar::Model::SqlObject);
 
@@ -64,7 +64,7 @@ sub isChild {
 # answer true if the table inherits from the specified table
 sub inheritsFrom {
 	my ($this,$tableReference) = @_;
-	my @references = grep { $_->getTableReference() == $tableReference } $this->getParentTables();
+	my @references = grep { $_->getTarget() == $tableReference } $this->getParentTables();
 	return @references;
 }
 
@@ -76,7 +76,7 @@ sub getParentTables {
 
 sub addParentTableReference {
 	my ($this,$tableName) = @_;
-	push(@{$this->{parentTables}},Alatar::Model::SqlTableReference->new($this,('parent_' . $tableName),$tableName));
+	push(@{$this->{parentTables}},Alatar::Model::Refs::SqlTableReference->new($this,$tableName));
 }
 
 sub addColumn {

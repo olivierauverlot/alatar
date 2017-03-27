@@ -22,7 +22,7 @@ sub new {
 
 sub printString {
 	my ($this) = @_;
-	return $this->getObjectType() . ' ' . $this->getEvent() . ' ON ' . $this->getTable()->getTableName();
+	return $this->getObjectType() . ' ' . $this->getEvent() . ' ON ' . $this->getTable()->getName();
 }
 
 sub getObjectType {
