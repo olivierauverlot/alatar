@@ -45,7 +45,7 @@ sub _copyColumnsInInheritedTables {
 			foreach my $c (@inheritedColumns) {
 				my $ic = Alatar::Model::SqlColumn->new($t,$c->getName());
 				$ic->hasBeenInherited();
-				$ic->setDataType(Alatar::Model::SqlDataTypeReference->new($ic,$c->getDataType()->getName()));
+				$ic->setDataType(Alatar::Model::Refs::SqlDataTypeReference->new($ic,$c->getDataType()->getName()));
 				$t->addColumn($ic);
 			}
 		}

@@ -2,7 +2,7 @@ package Alatar::Model::SqlCursor;
 
 use strict;
 use Alatar::Model::SqlArgument;
-use Alatar::Model::SqlDataTypeReference;
+use Alatar::Model::Refs::SqlDataTypeReference;
 
 our @ISA = qw(Alatar::Model::SqlRequest);
 
@@ -78,7 +78,7 @@ sub _extractArguments {
 	my @params = $args =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->addArg(Alatar::Model::SqlArgument->new($this,$p[0],Alatar::Model::SqlDataTypeReference->new($this,$p[1])));
+		$this->addArg(Alatar::Model::SqlArgument->new($this,$p[0],Alatar::Model::Refs::SqlDataTypeReference->new($this,$p[1])));
 	}
 }
 

@@ -50,7 +50,7 @@ sub _extractObject {
 		my @items = $code =~ /(.*?)\s(.*?)$/gi;
 		# print "$code\n";
 		$this->{entity}->setName($items[0]);
-		$this->{entity}->setDataType(Alatar::Model::SqlDataTypeReference->new($this->{entity},$items[1]));
+		$this->{entity}->setDataType(Alatar::Model::Refs::SqlDataTypeReference->new($this->{entity},$items[1]));
 	
 		if(defined($notNull)) {
 			my $db = $this->getOwner()->getOwner();
