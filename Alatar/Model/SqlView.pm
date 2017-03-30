@@ -10,7 +10,7 @@ our @ISA = qw(Alatar::Model::SqlObject);
 sub new {
 	my ($class,$owner,$name) = @_;
 	my $this = $class->SUPER::new($owner,$name);
-	$this->{request} = undef;
+	$this->{_request} = undef;
  	bless($this,$class);   
  	return $this;             
 }
@@ -35,12 +35,12 @@ sub printString {
 
 sub setSqlRequest {
 	my ($this,$request) = @_;
-	$this->{request} = $request;
+	$this->{_request} = $request;
 }
 
 sub getSqlRequest {
 	my ($this) = @_;
-	return $this->{request};
+	return $this->{_request};
 }
 
 1;
