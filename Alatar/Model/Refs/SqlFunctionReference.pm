@@ -9,7 +9,7 @@ our @ISA = qw(Alatar::Model::Refs::SqlReference);
 sub new {
 	my ($class,$owner,$name,$argumentsNumber) = @_;
 	my $this = $class->SUPER::new($owner,$name);
-	$this->{argumentsNumber} = $argumentsNumber;
+	$this->{_argumentsNumber} = $argumentsNumber;
  	bless($this,$class);      
  	return $this;            
 }
@@ -39,7 +39,7 @@ sub printString {
 # ----------------------------------------------------
 sub getArgumentsNumber {
 	my ($this) = @_;
-	return $this->{argumentsNumber};
+	return $this->{_argumentsNumber};
 }
 
 sub setReturnType {
