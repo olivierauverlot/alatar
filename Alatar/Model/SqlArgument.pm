@@ -7,9 +7,9 @@ use Data::Dumper;
 our @ISA = qw(Alatar::Model::SqlObject);
 
 sub new {
-	my ($class,$owner,$name,$type) = @_;
+	my ($class,$owner,$name,$typeReference) = @_;
 	my $this = $class->SUPER::new($owner,$name);
-   	$this->{dataType} = $type;
+   	$this->{_dataTypeReference} = $typeReference;
  	bless($this,$class);      
  	return $this;            
 }
@@ -29,9 +29,9 @@ sub isSqlArgument {
 	return 1;
 }
 
-sub getDataType {
+sub getDataTypeReference {
 	my ($this) = @_;
-	return $this->{dataType};
+	return $this->{_dataTypeReference};
 }
 
 1;
