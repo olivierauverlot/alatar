@@ -9,8 +9,8 @@ our @ISA = qw(Alatar::Model::SqlRequest);
 sub new {
 	my ($class,$owner,$name,$args,$request) = @_;
 	my $this = $class->SUPER::new($owner,$name,$request);
-	$this->{args} = [ ];
-	$this->{argumentsNumber} = 0;
+	$this->{_args} = [ ];
+	$this->{_argumentsNumber} = 0;
  	bless($this,$class);      
 	$this->_extractArguments($args);
  	return $this;            
@@ -47,26 +47,26 @@ sub getDatabaseReference {
 # ----------------------------------------------------
 sub getArgs {
 	my ($this) = @_;
-	return @{$this->{args}};
+	return @{$this->{_args}};
 }
 
 sub addArg {
 	my ($this,$sqlArg) = @_;
-	push(@{$this->{args}},$sqlArg);
-	$this->{argumentsNumber} = $this->{argumentsNumber} + 1;
+	push(@{$this->{_args}},$sqlArg);
+	$this->{_argumentsNumber} = $this->{_argumentsNumber} + 1;
 	return $sqlArg;
 }
 
 sub printArgs {
 	my ($this) = @_;
-	return '(' . join(',',@{$this->{args}}) . ')';
+	return '(' . join(',',@{$this->{_args}}) . ')';
 }
 
 # arguments number
 # ----------------------------------------------------
 sub getArgumentsNumber {
 	my ($this) = @_;
-	return $this->{argumentsNumber};
+	return $this->{_argumentsNumber};
 }
 
 # Action
