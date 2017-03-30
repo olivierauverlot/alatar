@@ -138,7 +138,7 @@ sub _addFunctions {
 				$this->{xmlWriter}->cdata($r->getRequest());
 		 		$this->{xmlWriter}->endTag();
 		 			
-		 		$this->_exportSqlFileToJSOn(Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql');
+		 		$this->_exportSqlFileToJSOn(Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->getOwnerName() . '_' . $r->getName() . '.sql');
 		 				
 		 		$this->{xmlWriter}->endTag();
 		 	}

@@ -7,7 +7,8 @@ use String::Util qw(trim);
 sub new {
 	my ($class,$owner,$name) = @_;
 	my $this = {
-		owner => $owner
+		_owner => $owner,
+		_name => undef
 	};
  	bless($this,$class);      
 	$this->setName($name);
@@ -34,7 +35,7 @@ sub getId() {
 
 sub getOwner {
 	my ($this) = @_;
-	return $this->{owner};
+	return $this->{_owner};
 }
 
 sub getOwnerName {
@@ -52,17 +53,17 @@ sub getDatabaseReference {
 
 sub setOwner {
 	my ($this,$owner) = @_;
-	$this->{owner} = $owner;
+	$this->{_owner} = $owner;
 }
 
 sub getName {
 	my ($this) = @_;
-	return $this->{name};
+	return $this->{_name};
 }
 
 sub setName {
 	my ($this,$name) = @_;
-	$this->{name} = trim($name);
+	$this->{_name} = trim($name);
 }
 
 sub isSqlReference {
