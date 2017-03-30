@@ -26,7 +26,7 @@ my $rule = $rules[0];
 is ($rule->getName(),'_RETURN','_RETURN rule found');
 
 is ($rule->isSelectEvent(),1,'Select Event found');
-is ($rule->getTable()->getTableName(),'aTable','aTable found');
-is ($rule->getTable()->getTableReference(),$model->getFirstObjectWithName('aTable',$model->getAllTables()),'Found reference of aTable');
+is ($rule->getTable()->getName(),'aTable','aTable found');
+is ($rule->getTable()->getTarget(),$model->getFirstObjectWithName('aTable',$model->getAllTables()),'Found reference of aTable');
 is ($rule->doInstead(),1,'INSTEAD indicates that the commands should be executed instead of the original command');
-is ($rule->getSqlRequest()->getRequest(),'SELECT aTable.id FROM aTable','Request found');
+is ($rule->getSqlRequest()->getRequest(),'SELECT aTable.id FROM aTable;','Request found');

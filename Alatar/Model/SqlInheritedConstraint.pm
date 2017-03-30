@@ -25,12 +25,11 @@ sub getObjectType {
 sub clone: Abstract;
 
 # Copy all the columns from the constraint defined 
-# on the parent table
+# in the parent table
 sub addAllColumnsFrom {
 	my ($this,$parentConstraint,$inheritedTable) = @_;
 	my $db = $this->getOwner()->getDatabaseReference();
 	foreach my $columnReference ($parentConstraint->getColumns()) {
-		my $r = Alatar::Model::SqlColumnReference->new($db,undef,$inheritedTable,$columnReference->getColumn());
-		$this->addColumn($r);
+		$this->addColumn(Alatar::Model::Refs::SqlColumnReference->new($db,$columnReference->getName(),$inheritedTable->getName()));
 	}
 }

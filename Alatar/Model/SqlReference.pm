@@ -38,6 +38,11 @@ sub isSqlColumnReference {
 	return 0;
 }
 
+sub isResolved {
+	my ($this) = @_;
+	return defined($this->{target});
+}
+
 sub getObjectType {
 	my ($this) = @_;
 	return 'SqlReference';
@@ -45,7 +50,7 @@ sub getObjectType {
 
 sub printString {
 	my ($this) = @_;
-	return $this->getObjectType() . ' : ' . $this->{name};
+	return $this->getObjectType() . ' : ' . $this->{name} . ' : ' . ($this->isResolved() ? 'target' : 'no target');
 }
 
 # getters and setters

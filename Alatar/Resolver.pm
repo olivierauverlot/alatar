@@ -17,8 +17,6 @@ sub new {
  	return $this;            
 }
 
-
-
 # Resolve the inherited tables
 sub _resolveInheritedTables {
 	my ($this) = @_;
@@ -128,36 +126,16 @@ sub _resolveUsedTablesByTriggers {
 		}
 	}
 }
-
 # resolve a column reference and returns an valid SqlColumn instance
-# recoit p et id
 sub _resolveColumnReference {
-	my ($this,$columnReference) = @_;	
-	
-	my ($tableRef,$columnRef);
-	# print $columnReference->getTable()->getName();
-	if(ref($columnReference->getColumn()) eq '') {
-		# the column reference is undefined
-		if(ref($columnReference->getTable()) eq '') {
-			# we must resolve the table reference
-			foreach my $table ($columnReference->getOwner()->getSqlTables()) {
-				if($table->getName() eq $columnReference->getTable()) {
-					$tableRef = $table;
-				}
-			}
-		} else {
-			$tableRef = $columnReference->getTable();
+	my ($this,$columnReference) = @_;
+	foreach my $column ($this->{owner}->getSqlColumns()) {
+		if(($columnReference->getTableName() eq $column->getOwner()->getName()) && ($columnReference->getName() eq $column->getName())) {
+			$columnReference->setTarget($column);
+			last;
 		}
-		# and find the column reference
-		foreach my $column ($tableRef->getColumns()) {
-			if($column->getName() eq $columnReference->getColumn()) {
-				$columnRef = $column;
-			}
-		}				
-	} else {
-		$columnRef = $columnReference->getColumn();
 	}
-	return $columnRef;
+	return $columnReference;
 }
 
 # Resolve the column references in constraints
@@ -165,17 +143,16 @@ sub _resolveConstraints {
 	my ($this) = @_;
 	for my $table ($this->{owner}->getSqlTables()) {
 		for my $constraint ($table->getConstraints()) {
-			# we resolve only if the constraint's columns have no a reference to the owner
 			my (@columns,$reference);		
 			foreach my $constraintColumn ($constraint->getColumns()) {
-				push(@columns,$this->_resolveColumnReference($constraintColumn));
-			}
+				push(@columns,$this->_resolveColumnReference($constraintColumn)->getTarget());
+			}	
 			# replace the list of SqlColumnReference with a list of SqlColumn
 			$constraint->setColumns(@columns);
 			
 			# we resolve the reference in SqlColumnReference (SqlForeignKeyConstraint instances only)
 			if($constraint->isSqlForeignKeyConstraint()) {
-				$constraint->setReference($this->_resolveColumnReference($constraint->getReference()));
+				$constraint->setReference($this->_resolveColumnReference($constraint->getReference())->getTarget());
 			}
 		}
 	}
@@ -204,6 +181,7 @@ sub _dumpAllConstraintReferences {
 
 sub resolveAllLinks {
 	my ($this) = @_;
+	# print "--- RESOLVER ---\n";
 	$this->_resolveInheritedTables();
 	$this->_copyColumnsInInheritedTables();
 	$this->_copyConstraintsInInheritedTables();

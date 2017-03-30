@@ -6,7 +6,7 @@ use String::Util qw(trim);
 
 use Alatar::Model::SqlColumn;
 use Alatar::Model::SqlNotNullConstraint;
-use Alatar::Model::SqlColumnReference;
+use Alatar::Model::Refs::SqlColumnReference;
 
 our @ISA = qw(Alatar::PostgreSQL::Extractors::PgExtractor);
 
@@ -54,7 +54,7 @@ sub _extractObject {
 	
 		if(defined($notNull)) {
 			my $db = $this->getOwner()->getOwner();
-			my $columnReference = Alatar::Model::SqlColumnReference->new($db,undef,$this->getOwner(),$this->{entity});
+			my $columnReference = Alatar::Model::Refs::SqlColumnReference->new($db,$this->{entity}->getName(),$this->getOwner()->getName());
 			$notNull->addColumn($columnReference);
 			$this->getOwner()->addConstraint($notNull);
 		}

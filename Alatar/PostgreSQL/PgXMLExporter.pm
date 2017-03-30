@@ -20,6 +20,7 @@ sub new {
 	$this->{xmlWriter}->startTag('database',
 		'clientEncoding' => $this->{model}->getClientEncoding()
 	);
+	# print "--- EXPORTER ---\n";
 	$this->_addExtensions();
 	$this->_addFunctions();
 	$this->_addTables();
@@ -394,7 +395,6 @@ sub _addReferences {
 	my ($this) = @_;
 	
 	$this->{xmlWriter}->startTag('references');
-	
 	$this->{xmlWriter}->startTag('foreignKeys');
 	foreach my $t ($this->{model}->getSqlTables()) {
 		my @fks = grep {
@@ -437,8 +437,6 @@ sub _addReferences {
 	$this->{xmlWriter}->endTag();	# end of triggers
 	
 	$this->{xmlWriter}->endTag();	# end of references
-
-	
 }
 
 1;

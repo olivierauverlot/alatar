@@ -16,7 +16,7 @@ use Alatar::Model::SqlEnumerationType;
 use Alatar::Model::SqlCompositeType;
 use Alatar::Model::SqlTable;
 use Alatar::Model::SqlTrigger;
-use Alatar::Model::SqlColumnReference;
+use Alatar::Model::Refs::SqlColumnReference;
 use Alatar::Model::SqlPrimaryKeyConstraint;
 use Alatar::Model::SqlForeignKeyConstraint;
 use Alatar::Model::SqlUniqueConstraint;
@@ -147,6 +147,17 @@ sub getAllTables {
 	 	}
 	}
 	return @tables;
+}
+
+sub getSqlColumns {
+	my ($this) = @_;
+	my @columns;
+	foreach my $t ($this->getSqlTables()) {
+		foreach my $c ($t->getColumns()) {
+			push(@columns,$c);
+		}
+	}
+	return @columns;
 }
 
 sub getInheritedTables {
@@ -292,7 +303,7 @@ sub _extractTables {
 				my $constraint = Alatar::Model::SqlPrimaryKeyConstraint->new($table,$pkConstraint[0]);
 				# list of columns
 				foreach my $columnName (split(/,/ , $pkConstraint[1])) {
-					$constraint->addColumn(Alatar::Model::SqlColumnReference->new($this,undef,$table,trim($columnName)));
+					$constraint->addColumn(Alatar::Model::Refs::SqlColumnReference->new($this,trim($columnName),$table->getName()));
 				}
 				# we have only the column(s) name(s). It will be resolved later by the Resolver
 				$table->addConstraint($constraint);
@@ -305,10 +316,10 @@ sub _extractTables {
 			if(scalar(@fkConstraint) == 4) {
 				# Define the source column 
 				my $constraint = Alatar::Model::SqlForeignKeyConstraint->new($table,$fkConstraint[0]);
-				$constraint->addColumn(Alatar::Model::SqlColumnReference->new($this,undef,$table,trim($fkConstraint[1])));
+				$constraint->addColumn(Alatar::Model::Refs::SqlColumnReference->new($this,trim($fkConstraint[1]),$table->getName()));
 				
 				# define the target column
-				$constraint->setReference(Alatar::Model::SqlColumnReference->new($this,undef,trim($fkConstraint[2]),trim($fkConstraint[3])));
+				$constraint->setReference(Alatar::Model::Refs::SqlColumnReference->new($this,trim($fkConstraint[3]),trim($fkConstraint[2])));
 				
 				# the constraint is added to the table definition
 				$table->addConstraint($constraint);
@@ -322,7 +333,7 @@ sub _extractTables {
 	        	my $constraint = Alatar::Model::SqlUniqueConstraint->new($table,$1);
 				# list of columns
 				foreach my $columnName (split(/,/ , $2)) {
-					$constraint->addColumn(Alatar::Model::SqlColumnReference->new($this,undef,$table,trim($columnName)));
+					$constraint->addColumn(Alatar::Model::Refs::SqlColumnReference->new($this,trim($columnName),$table->getName()));
 				}
 				# we have only the column(s) name(s). It will be resolved later by the Resolver
 				$table->addConstraint($constraint);
