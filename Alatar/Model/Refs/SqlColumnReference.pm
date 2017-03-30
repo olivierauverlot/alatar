@@ -1,10 +1,10 @@
 package Alatar::Model::Refs::SqlColumnReference;
 
 use strict;
-use Alatar::Model::SqlReference;
+use Alatar::Model::Refs::SqlReference;
 use Data::Dumper;
 
-our @ISA = qw(Alatar::Model::SqlReference);
+our @ISA = qw(Alatar::Model::Refs::SqlReference);
 
 sub new {
 	my ($class,$owner,$name,$tableName) = @_;

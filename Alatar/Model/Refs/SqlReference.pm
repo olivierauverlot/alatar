@@ -1,4 +1,4 @@
-package Alatar::Model::SqlReference;
+package Alatar::Model::Refs::SqlReference;
 
 use strict;
 use Alatar::Model::SqlObject;

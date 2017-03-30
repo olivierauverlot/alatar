@@ -1,12 +1,12 @@
 package Alatar::Model::Refs::SqlDataTypeReference;
 
 use strict;
-use Alatar::Model::SqlReference;
+use Alatar::Model::Refs::SqlReference;
 use Alatar::Model::SqlColumn;
 use Alatar::Model::SqlFunction;
 use Alatar::Model::SqlCursor;
 
-our @ISA = qw(Alatar::Model::SqlReference);
+our @ISA = qw(Alatar::Model::Refs::SqlReference);
 
 sub new {
 	my ($class,$owner,$name) = @_;

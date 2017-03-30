@@ -2,8 +2,9 @@ package Alatar::Model::Refs::SqlFunctionReference;
 
 use strict;
 use Alatar::Model::SqlObject;
+use Alatar::Model::Refs::SqlReference;
 
-our @ISA = qw(Alatar::Model::SqlReference);
+our @ISA = qw(Alatar::Model::Refs::SqlReference);
 
 sub new {
 	my ($class,$owner,$name,$argumentsNumber) = @_;
