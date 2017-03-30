@@ -148,7 +148,7 @@ sub _extractObject {
 	$this->_extractRequests();
 	$this->_extractInvokedFunctions($this->{entity}->getBodySection());
 	
-	if($this->{entity}->getReturnType() eq 'trigger') {
+	if($this->{entity}->getReturnType()->getName() eq 'trigger') {
 		$this->_extractNewOldColumns($this->{entity}->getBodySection());
 	}
 }

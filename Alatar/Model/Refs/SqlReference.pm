@@ -8,7 +8,7 @@ our @ISA = qw(Alatar::Model::SqlObject);
 sub new {
 	my ($class,$owner,$name) = @_;
 	my $this = $class->SUPER::new($owner,$name);
-	$this->{target} = undef;
+	$this->{_target} = undef;
  	bless($this,$class);
  	return $this;            
 }
@@ -40,7 +40,7 @@ sub isSqlColumnReference {
 
 sub isResolved {
 	my ($this) = @_;
-	return defined($this->{target});
+	return defined($this->{_target});
 }
 
 sub getObjectType {
@@ -56,12 +56,12 @@ sub printString {
 # getters and setters
 sub setTarget {
 	my ($this,$sqlEntity) = @_;
-	$this->{target} = $sqlEntity;
+	$this->{_target} = $sqlEntity;
 }
 
 sub getTarget {
 	my ($this) = @_;
-	return $this->{target};
+	return $this->{_target};
 }
 
 1;
