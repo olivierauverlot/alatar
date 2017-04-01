@@ -21,7 +21,7 @@ sub getObjectType {
 
 sub printString {
 	my ($this) = @_;
-	return $this->getObjectType() . ' : ' . $this->{name} . ' = ' . $this->getDataTypeName();
+	return $this->getObjectType() . ' : ' . $this->{name} . ' = ' . $this->getDataTypeReference()->getTarget()->getName();
 }
 
 sub isSqlArgument {

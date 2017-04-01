@@ -41,11 +41,16 @@ sub setName {
 # the collection of database's objects
 sub addBasicDataTypeIfNotExists {
 	my ($this) = @_;
+	my @refs = [];
+	
 	my $database = $this->getOwner()->getDatabaseReference();
 	my @datatypeObjects = $database->getSqlDataTypes();
-	my $found = grep { $_->getName() eq $this->getName() } @datatypeObjects;
-	if(!$found) {
-		$database->addObject(Alatar::Model::SqlDataType->new($database,$this->getName()));
+
+	@refs = grep { $_->getName() eq $this->getName() } @datatypeObjects;
+	if(scalar(@refs) == 0) {
+		$this->setTarget($database->addObject(Alatar::Model::SqlDataType->new($database,$this->getName())));
+	} else {
+		$this->setTarget($refs[0]); 
 	}
 }
 

@@ -88,7 +88,7 @@ sub saveRequests {
 
 	foreach my $f ($model->getSqlFunctions()) {
 		foreach my $r ($f->getSqlCursorRequests()) {
-			$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->{owner}->getName() . '_' . $r->getName() . '.sql';
+			$dest = Alatar::Configuration->getOption('requestsPath') . Alatar::Configuration->getOption('cursors_folder') . '/' . $r->getOwnerName() . '_' . $r->getName() . '.sql';
 			saveRequest($dest,$r->getRequest());
 		}
 	}

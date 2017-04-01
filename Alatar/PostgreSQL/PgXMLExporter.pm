@@ -87,7 +87,7 @@ sub _addFunctions {
 	 			$this->{xmlWriter}->startTag('argument',
 	 				'id' => $a->getId(),
 	 				'name' => $a->getName(),
-	 				'type' => $a->getDataTypeReference()->getName()
+	 				'type' => $a->getDataTypeReference()->getTarget()->getName()
 	 			);
 	 			$this->{xmlWriter}->endTag();
 	 		}
@@ -128,7 +128,7 @@ sub _addFunctions {
 						$this->{xmlWriter}->startTag('argument',
 	 						'id' => $a->getId(),
 	 						'name' => $a->getName(),
-	 						'type' => $a->getDataTypeReference()->getName()
+	 						'type' => $a->getDataTypeReference()->getTarget()->getName()
 	 					);
 						$this->{xmlWriter}->endTag();
 					}
@@ -161,20 +161,6 @@ sub _addFunctions {
 		 			);
 	 			}
 	 			$this->{xmlWriter}->characters($if->getName());
-	 			$this->{xmlWriter}->endTag();
-	 		}
-	 		$this->{xmlWriter}->endTag();
-		}
-		@callers = $f->getCallers();
-		if(@callers) {
-			$this->{xmlWriter}->startTag('callers');
-	 		foreach my $caller (@callers) {
-	 			$this->{xmlWriter}->startTag('caller',
-	 				'argumentsNumber' => $caller->getArgumentsNumber(),
-	 				'stub' => ($caller->isStub() ? 'true' : 'false'),
-	 				'id' => $caller->getFunctionReference()->getId()
-	 			);
-	 			$this->{xmlWriter}->characters($caller->getName());
 	 			$this->{xmlWriter}->endTag();
 	 		}
 	 		$this->{xmlWriter}->endTag();
