@@ -14,7 +14,6 @@ sub new {
  	$this->{args} = [ ];
   	$this->{argumentsNumber} = 0;
   	$this->{bodySection} = '';
-   	$this->{callers} = [ ];
    	$this->{comments} = 0;
     $this->{cursors} = [ ];
  	$this->{declareSection} = '';
@@ -72,7 +71,7 @@ sub getReturnType {
 
 sub getReturnTypeName {
 	my ($this) = @_;
-	return $this->{returnType}->getName();
+	return $this->{returnType}->getTarget()->getName();
 }
 
 sub setReturnType {
@@ -149,20 +148,6 @@ sub addInvokedFunction {
 	my ($this,$invocation) = @_;
 	push(@{$this->{invokedFunctions}},$invocation);
 	return $invocation;
-}
-
-# Called By
-# The functions that call this function
-# ----------------------------------------------------
-sub getCallers {
-	my ($this) = @_;
-	return @{$this->{callers}};
-}
-
-sub addCaller {
-	my ($this,$caller) = @_;
-	push(@{$this->{callers}},$caller);
-	return $caller;
 }
 
 # Used Requests
