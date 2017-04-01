@@ -28,11 +28,11 @@ sub getObjectType {
 
 # setters and getters
 sub setName {
-	my ($this,$name) = @_;
+	my ($this,$name) = @_;	
+	$name =~ s/\(.*?\)//g;
+	$name =~ s/\[.*?\]//g;
+	$name = lc($name);
 	$this->SUPER::setName($name);
-	$this->{name} =~ s/\(.*?\)//g;
-	$this->{name} =~ s/\[.*?\]//g;
-	$this->{name} = lc($this->{name});
 }
 
 # action
@@ -43,9 +43,9 @@ sub addBasicDataTypeIfNotExists {
 	my ($this) = @_;
 	my $database = $this->getOwner()->getDatabaseReference();
 	my @datatypeObjects = $database->getSqlDataTypes();
-	my $found = grep { $_->getName() eq $this->{name} } @datatypeObjects;
+	my $found = grep { $_->getName() eq $this->getName() } @datatypeObjects;
 	if(!$found) {
-		$database->addObject(Alatar::Model::SqlDataType->new($database,$this->{name}));
+		$database->addObject(Alatar::Model::SqlDataType->new($database,$this->getName()));
 	}
 }
 
