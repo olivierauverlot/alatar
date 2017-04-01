@@ -15,7 +15,6 @@ sub new {
 	$this->{columns} = [ ];
 	$this->{constraints} = [ ];
 	$this->{invokedFunctions} = [ ];
-   	$this->{callers} = [ ];
    	$this->{parentTables} = [ ];
  	bless($this,$class);
  	return $this;            
