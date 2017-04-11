@@ -29,6 +29,15 @@ sub isSqlArgument {
 	return 1;
 }
 
+# setters and getters
+
+sub getReferences {
+	my ($this) = @_;
+	my @references = [ ];
+	push(@references,$this->{_dataTypeReference});	
+	return @references;
+}
+
 sub getDataTypeReference {
 	my ($this) = @_;
 	return $this->{_dataTypeReference};
