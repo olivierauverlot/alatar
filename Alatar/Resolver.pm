@@ -92,8 +92,8 @@ sub _resolveInvokedFunctionsByTriggers {
 	my @functions = $this->{owner}->getSqlFunctions();
 	foreach my $t (@triggers) {
 		foreach my $f (@functions) {
-			if($t->getInvokedFunction()->isInvocationOf($f)) {
-				$t->getInvokedFunction()->setTarget($f);
+			if($t->getInvokedFunctionReference()->isInvocationOf($f)) {
+				$t->getInvokedFunctionReference()->setTarget($f);
 			}
 		}
 	}
@@ -119,9 +119,10 @@ sub _resolveUsedTablesByTriggers {
 	my @triggers = $this->{owner}->getSqlTriggers();
 	my @tables = $this->{owner}->getAllTables();
 	foreach my $trigger (@triggers) {
+		my $tref = $trigger->getTableReference();
 		foreach my $table (@tables) {
-			if($trigger->getTableName() eq $table->getName()) {
-				$trigger->setTableReference($table);
+			if($tref->getName() eq $table->getName()) {
+				$tref->setTarget($table);
 			}
 		}
 	}

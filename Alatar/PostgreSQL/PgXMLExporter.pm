@@ -316,8 +316,8 @@ sub _addTriggerDefinitions {
  			'level' => $t->getLevel()
  		);
  		$this->{xmlWriter}->startTag('table',
- 			'name' => $t->getTableReference()->getName(),
- 			'id' => $t->getTableReference()->getId()
+ 			'name' => $t->getTableReference()->getTarget()->getName(),
+ 			'id' => $t->getTableReference()->getTarget()->getId()
  		);
 	 	$this->{xmlWriter}->endTag();
 	 	$this->{xmlWriter}->startTag('events');
@@ -328,11 +328,11 @@ sub _addTriggerDefinitions {
 	 	}
 	 	$this->{xmlWriter}->endTag();	 	
 	 	$this->{xmlWriter}->startTag('invokedFunction',
-	 		'id' => ($t->getInvokedFunction()->getId()),
-	 		'argumentsNumber' => ($t->getInvokedFunction()->getArgumentsNumber()),
-	 		'stub' => ($t->getInvokedFunction()->isStub() ? 'true' : 'false')
+	 		'id' => ($t->getInvokedFunctionReference()->getTarget()->getId()),
+	 		'argumentsNumber' => ($t->getInvokedFunctionReference()->getTarget()->getArgumentsNumber()),
+	 		'stub' => ($t->getInvokedFunctionReference()->isStub() ? 'true' : 'false')
 	 	);
-	 	$this->{xmlWriter}->characters($t->getInvokedFunction()->getName());
+	 	$this->{xmlWriter}->characters($t->getInvokedFunctionReference()->getTarget()->getName());
 	 	$this->{xmlWriter}->endTag();
 
  		$this->{xmlWriter}->startTag('sql');
@@ -416,8 +416,8 @@ sub _addReferences {
 	$this->{xmlWriter}->startTag('triggers');
 	foreach my $t ($this->{model}->getSqlTriggers()) {
 		$this->{xmlWriter}->startTag('trigger');
-			$this->_addReference($t,$t->getTableReference());
-			$this->_addReference($t,$t->getInvokedFunction()->getTarget());
+			$this->_addReference($t,$t->getTableReference()->getTarget());
+			$this->_addReference($t,$t->getInvokedFunctionReference()->getTarget());
 		$this->{xmlWriter}->endTag();	# end of trigger
 	}
 	$this->{xmlWriter}->endTag();	# end of triggers

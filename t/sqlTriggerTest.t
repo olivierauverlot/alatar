@@ -60,7 +60,7 @@ is($trigger1->getTableReference()->getName(),'p','trigger1 is applied on the tab
 is($trigger2->getTableReference()->getName(),'p','trigger2 is applied on the table p');
 
 # function
-is($trigger1->getInvokedFunction()->getName(),'foo','trigger1 calls a function named foo');
-is($trigger2->getInvokedFunction()->getName(),'foo','trigger1 calls a function named foo');
-is($trigger1->getInvokedFunction()->getArgumentsNumber(),0,'trigger1 calls the foo() function');
-is($trigger2->getInvokedFunction()->getArgumentsNumber(),0,'trigger2 calls the foo() function');
+is($trigger1->getInvokedFunctionReference()->getName(),'foo','trigger1 calls a function named foo');
+is($trigger2->getInvokedFunctionReference()->getName(),'foo','trigger1 calls a function named foo');
+is($trigger1->getInvokedFunctionReference()->getArgumentsNumber(),0,'trigger1 calls the foo() function');
+is($trigger2->getInvokedFunctionReference()->getArgumentsNumber(),0,'trigger2 calls the foo() function');
