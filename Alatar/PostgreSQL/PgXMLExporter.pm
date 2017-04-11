@@ -121,7 +121,7 @@ sub _addFunctions {
 					'name' => $r->getName(),
 					'id' => $r->getId()
 				);
-				@args = $r->getArgs();
+				@args = $r->getArguments();
 				if(@args) {
 					$this->{xmlWriter}->startTag('arguments');
 					foreach $a (@args) {

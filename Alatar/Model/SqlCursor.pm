@@ -3,13 +3,14 @@ package Alatar::Model::SqlCursor;
 use strict;
 use Alatar::Model::SqlArgument;
 use Alatar::Model::Refs::SqlDataTypeReference;
+use Alatar::Model::Refs::SqlArgumentReference;
 
 our @ISA = qw(Alatar::Model::SqlRequest);
 
 sub new {
 	my ($class,$owner,$name,$args,$request) = @_;
 	my $this = $class->SUPER::new($owner,$name,$request);
-	$this->{_args} = [ ];
+	$this->{_argumentReferences} = [ ];
 	$this->{_argumentsNumber} = 0;
  	bless($this,$class);      
 	$this->_extractArguments($args);
@@ -45,21 +46,30 @@ sub getDatabaseReference {
 
 # Cursor arguments
 # ----------------------------------------------------
-sub getArgs {
+sub getReferences {
 	my ($this) = @_;
-	return @{$this->{_args}};
+	return @{$this->{_argumentReferences}};
 }
 
-sub addArg {
-	my ($this,$sqlArg) = @_;
-	push(@{$this->{_args}},$sqlArg);
+sub getArguments { 
+	my ($this) = @_;
+	my @args;
+	foreach my $ref (grep { $_->isResolved() } $this->getReferences()) {
+		push(@args,$ref->getTarget());
+	}
+	return @args;
+}
+
+sub _addArgumentReference {
+	my ($this,$sqlArgRef) = @_;
+	push(@{$this->{_argumentReferences}},$sqlArgRef);
 	$this->{_argumentsNumber} = $this->{_argumentsNumber} + 1;
-	return $sqlArg;
+	return $sqlArgRef;
 }
 
-sub printArgs {
+sub printArguments {
 	my ($this) = @_;
-	return '(' . join(',',@{$this->{_args}}) . ')';
+	return '(' . join(',',@{$this->{_argumentReferences}}) . ')';
 }
 
 # arguments number
@@ -78,7 +88,14 @@ sub _extractArguments {
 	my @params = $args =~ /(\w+\s\w+\s?\w*)/g;
 	foreach my $param (@params) {
 		my @p = $param =~ /(\w+)\s(\w+\s?\w*)/g;
-		$this->addArg(Alatar::Model::SqlArgument->new($this,$p[0],Alatar::Model::Refs::SqlDataTypeReference->new($this,$p[1])));
+		# the argument is added to the database object list
+		my $arg = Alatar::Model::SqlArgument->new($this,$p[0],Alatar::Model::Refs::SqlDataTypeReference->new($this,$p[1]));
+		$this->getDatabaseReference()->addObject($arg);
+		# a reference is created to the argument object
+		# the reference is set now because two cursors could share the same name
+		my $ref = Alatar::Model::Refs::SqlArgumentReference->new($this,$p[0],$this->getName());
+		$ref->setTarget($arg);
+		$this->_addArgumentReference($ref);
 	}
 }
 
