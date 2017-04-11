@@ -14,12 +14,11 @@ sub new {
 	my ($class,$owner) = @_;
  	my $this = $class->SUPER::new($owner,'undef');
  	$this->{_request} = '';
-	$this->{fire} = '';
-	$this->{events} = [ ];
-	$this->{tableName} = '';
-	$this->{tableReference} = undef;
-	$this->{level} = '';
-	$this->{invokedFunction} = undef;
+	$this->{_fire} = '';
+	$this->{_events} = [ ];
+	$this->{_tableReference} = undef;
+	$this->{_level} = '';
+	$this->{_invokedFunctionReference} = undef;
 	bless($this,$class);    
  	return $this;            
 }
@@ -41,6 +40,15 @@ sub printString {
 
 # setters and getters
 # ----------------------------------------------------
+
+sub getReferences {
+	my ($this) = @_;
+	my @references = [ ];
+	push(@references,$this->{_tableReference});	
+	push(@references,$this->{_invokedFunctionReference});
+	return @references;
+}
+
 sub getSqlRequest {
 	my ($this) = @_;
 	return $this->{_request};
@@ -53,42 +61,32 @@ sub setSqlRequest {
 
 sub getFire {
 	my ($this) = @_;
-	return $this->{fire};
+	return $this->{_fire};
 }
 
 sub setFire {
 	my ($this,$value) = @_;
-	$this->{fire} = $value;	
+	$this->{_fire} = $value;	
 }
 
 sub getEvents {
 	my ($this) = @_;
-	return @{$this->{events}};
+	return @{$this->{_events}};
 }
 
 sub addEvent {
 	my ($this,$event) = @_;
-	push(@{$this->{events}},$event);	
-}
-
-sub getTableName {
-	my ($this) = @_;
-	return $this->{tableName};
-}
-
-sub setTableName {
-	my ($this,$value) = @_;
-	$this->{tableName} = $value;	
+	push(@{$this->{_events}},$event);	
 }
 
 sub getLevel {
 	my ($this) = @_;
-	return $this->{level};
+	return $this->{_level};
 }
 
 sub setLevel {
 	my ($this,$value) = @_;
-	$this->{level} = $value;	
+	$this->{_level} = $value;	
 }
 
 sub getTableReference {
@@ -101,13 +99,13 @@ sub setTableReference {
 	$this->{tableReference} = $tableRef;	
 }
 
-sub getInvokedFunction {
+sub getInvokedFunctionReference {
 	my ($this) = @_;
-	return $this->{invokedFunction};
+	return $this->{_invokedFunctionReference};
 }
 
-sub setInvokedFunction {
+sub setInvokedFunctionReference {
 	my ($this,$value) = @_;
-	$this->{invokedFunction} = $value;	
+	$this->{_invokedFunctionReference} = $value;	
 }
 

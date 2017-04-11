@@ -8,8 +8,7 @@ sub new {
 	my ($class,$owner,$name) = @_;
 	my $this = {
 		_owner => $owner,
-		_name => undef,
-		_references => []
+		_name => undef
 	};
  	bless($this,$class);      
 	$this->setName($name);
@@ -67,17 +66,8 @@ sub setName {
 	$this->{_name} = trim($name);
 }
 
-# _references is an array that contains all references used by the object
-sub addReference {
-	my ($this,$ref) = @_;
-	push(@{$this->{_references}},$ref);
-	return $ref;
-}
-
-sub getReferences {
-	my ($this) = @_;
-	return @{$this->{_references}};
-}
+# getReferences is an abstract method that returns an array of all object's references
+sub getReferences: Abstract;
 
 # methods to know the object type
 sub isSqlReference {

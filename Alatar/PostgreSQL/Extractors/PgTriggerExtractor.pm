@@ -26,10 +26,11 @@ sub _extractObject {
 	foreach my $event (@events) {
 		$this->{entity}->addEvent(trim($event));
 	}
-	$this->{entity}->setTableName($items[3]);
+	$this->{entity}->setTableReference(Alatar::Model::Refs::SqlTableReference->new($this,$items[3]));
+	
 	$this->{entity}->setLevel($items[4]);
 	# pour le moment, on passe 0 arguments (il faudra vérifiquer le nombre d'arguments)
-	$this->{entity}->setInvokedFunction(Alatar::Model::Refs::SqlFunctionReference->new($this,$items[5],0));
+	$this->{entity}->setInvokedFunctionReference(Alatar::Model::Refs::SqlFunctionReference->new($this,$items[5],0));
 }
 
 1;
