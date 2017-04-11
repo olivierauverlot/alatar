@@ -18,6 +18,11 @@ sub isSqlReference {
 	return 1;
 }
 
+sub isSqlArgumentReference {
+	my ($this) = @_;
+	return 0;
+}
+
 sub isSqlFunctionReference {
 	my ($this) = @_;
 	return 0;
