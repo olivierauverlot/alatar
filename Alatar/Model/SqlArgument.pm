@@ -43,4 +43,9 @@ sub getDataTypeReference {
 	return $this->{_dataTypeReference};
 }
 
+sub getDataTypeName {
+	my ($this) = @_;
+	return $this->getDataTypeReference()->getTarget()->getName();
+}
+
 1;
