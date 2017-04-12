@@ -91,12 +91,17 @@ sub setLevel {
 
 sub getTableReference {
 	my ($this) = @_;
-	return $this->{tableReference};
+	return $this->{_tableReference};
 }
 
 sub setTableReference {
 	my ($this,$tableRef) = @_;
-	$this->{tableReference} = $tableRef;	
+	$this->{_tableReference} = $tableRef;	
+}
+
+sub getTable {
+	my ($this) = @_;
+	return $this->{_tableReference}->getTarget();
 }
 
 sub getInvokedFunctionReference {
@@ -109,3 +114,9 @@ sub setInvokedFunctionReference {
 	$this->{_invokedFunctionReference} = $value;	
 }
 
+sub getInvokedFunction {
+	my ($this) = @_;
+	return $this->{_invokedFunctionReference}->getTarget();
+}
+
+1;
