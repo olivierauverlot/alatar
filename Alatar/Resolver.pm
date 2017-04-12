@@ -106,8 +106,8 @@ sub _resolveUsedTablesByRules {
 	my @tables = $this->{owner}->getAllTables();
 	foreach my $rule (@rules) {
 		foreach my $table (@tables) {
-			if($rule->getTable()->getName() eq $table->getName()) {
-				$rule->getTable()->setTarget($table);
+			if($rule->getTableReference()->getName() eq $table->getName()) {
+				$rule->getTableReference()->setTarget($table);
 			}
 		}
 	}	

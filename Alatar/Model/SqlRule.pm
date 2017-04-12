@@ -14,7 +14,7 @@ sub new {
  	$this->{_also} = 0;
  	$this->{_instead} = 0;
 	$this->{_event} = '';
-	$this->{_table} = undef;
+	$this->{_tableReference} = undef;
 	$this->{_request} = undef;
 	bless($this,$class);    
  	return $this;    
@@ -35,6 +35,15 @@ sub isSqlRule {
 	return 1;
 }
 
+sub getReferences {
+	my ($this) = @_;
+	my @references = [ ];
+	push(@references,$this->{_tableReference});
+	return @references;
+}
+
+# setters and getters
+# ------------------------------------------
 sub setAlsoMode {
 	my ($this) = @_;
 	$this->{_also} = 1;
@@ -85,14 +94,19 @@ sub isDeleteEvent {
 	return $this->{_event} eq 'DELETE';
 }
 
-sub setTable {
+sub setTableReference {
 	my ($this,$tableReference) = @_;
-	$this->{_table} = $tableReference;
+	$this->{_tableReference} = $tableReference;
+}
+
+sub getTableReference {
+	my ($this) = @_;
+	return $this->{_tableReference};
 }
 
 sub getTable {
 	my ($this) = @_;
-	return $this->{_table};
+	return $this->{_tableReference}->getTarget();
 }
 
 sub setSqlRequest {

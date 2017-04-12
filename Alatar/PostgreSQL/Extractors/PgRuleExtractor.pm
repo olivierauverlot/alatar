@@ -41,7 +41,7 @@ sub _extractObject {
 	
 	$this->{entity} = Alatar::Model::SqlRule->new($this->{owner},$items[NAME]);
 	$this->{entity}->setEvent($items[EVENT]);
-	$this->{entity}->setTable(Alatar::Model::Refs::SqlTableReference->new($this->getOwner(),$items[TABLE]));
+	$this->{entity}->setTableReference(Alatar::Model::Refs::SqlTableReference->new($this->getOwner(),$items[TABLE]));
 	if($items[MODE] eq 'INSTEAD') {
 		$this->{entity}->setInsteadMode();
 	} else {
