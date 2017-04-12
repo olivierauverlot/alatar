@@ -87,7 +87,7 @@ sub _addFunctions {
 	 			$this->{xmlWriter}->startTag('argument',
 	 				'id' => $a->getId(),
 	 				'name' => $a->getName(),
-	 				'type' => $a->getDataTypeName()
+	 				'type' => $a->getDataType()->getName()
 	 			);
 	 			$this->{xmlWriter}->endTag();
 	 		}
@@ -128,7 +128,7 @@ sub _addFunctions {
 						$this->{xmlWriter}->startTag('argument',
 	 						'id' => $a->getId(),
 	 						'name' => $a->getName(),
-	 						'type' => $a->getDataTypeName()
+	 						'type' => $a->getDataType()->getName()
 	 					);
 						$this->{xmlWriter}->endTag();
 					}
